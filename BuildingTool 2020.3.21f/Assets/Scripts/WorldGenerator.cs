@@ -81,10 +81,11 @@ public class WorldGenerator : MonoBehaviour
     public Vector3 PositionDivide(Vector3 _pos)
     {
         Vector3 pos = _pos;
-
+        decimal posX = (decimal)pos.x;
+        decimal posZ = (decimal)pos.z;
         Debug.Log(pos);
-
-        int xInt = (int)pos.x;
+        posX = decimal.Round(posX, 2, System.MidpointRounding.AwayFromZero);
+        float xInt = pos.x;
         float xFloat = pos.x - xInt;
 
         if (xFloat > 0)
@@ -96,7 +97,7 @@ public class WorldGenerator : MonoBehaviour
         float zFloat = pos.z - zInt;
 
         if (zFloat > 0)
-            zFloat = 0.5f;
+            zFloat = 0.5f; 
         if (zFloat < 0)
             zFloat = -0.5f;
 
@@ -128,24 +129,10 @@ public class WorldGenerator : MonoBehaviour
 
                     int xInt = (int)pos.x;
                     float xFloat = pos.x - xInt;
+                    pos = PositionDivide(_pos);
+                   
 
-                    //if (xFloat > 0)
-                    //    xFloat = 0.02f;
-                    //if (xFloat < 0)
-                    //    xFloat = -0.02f;
-
-                    //int zInt = (int)pos.z;
-                    //float zFloat = pos.z - zInt;
-
-                    //if (zFloat > 0)
-                    //    zFloat = 0.02f;
-                    //if (zFloat < 0)
-                    //    zFloat = -0.02f;
-
-                    //pos.x = xInt + xFloat;
-                    //pos.z = zInt + zFloat;
-
-                    blockGo.transform.position = pos + Vector3.up * 0.5f;
+                    blockGo.transform.position = pos;
                 }
                 break;
         }
