@@ -36,7 +36,7 @@ public class Builder : MonoBehaviour
     public void AddBlockTypeSelect(int _index)
     {
         blockSelectIndex = _index;
-        //RootCanvas.Instance.SelectBlock(_index);
+        RootCanvas.instance.SelectBlock(_index);
     }
     public void AddBlock()
     {
@@ -45,14 +45,14 @@ public class Builder : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(mCameraHitRay, out hit) == true)
         {
-            if (hit.transform.gameObject.layer != 0 && hit.transform.gameObject.layer != 6)
+            if (hit.transform.gameObject.layer != 7 && hit.transform.gameObject.layer != 6)
                 return;
 
           //  Debug.Log("Add Block" + hit.transform.name);
 
             switch (hit.transform.gameObject.layer)
             {
-                case 0:
+                case 7:
                     WorldGenerator.Instance.AddBlock(blockSelectIndex, hit.transform.gameObject.layer, hit.transform.position, hit.normal, true);
                     break;
                 case 6:

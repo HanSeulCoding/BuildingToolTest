@@ -85,7 +85,7 @@ public class WorldGenerator : MonoBehaviour
         decimal posZ = (decimal)pos.z;
         Debug.Log(pos);
         posX = decimal.Round(posX, 2, System.MidpointRounding.AwayFromZero);
-        float xInt = pos.x;
+        int xInt = (int)pos.x;
         float xFloat = pos.x - xInt;
 
         if (xFloat > 0)
@@ -117,7 +117,7 @@ public class WorldGenerator : MonoBehaviour
         switch (_layer)
         {
             //ºí·° ¿·¿¡ ´ê¾ÒÀ» ¶§
-            case 0:
+            case 7:
                 blockGo.transform.position = _pos + _normal;
                 break;
             //¹Ù´Ú¿¡ ´ê¾ÒÀ» ¶§
@@ -142,7 +142,7 @@ public class WorldGenerator : MonoBehaviour
         if (_isAnimation == true)
         {
             Block block = blockGo.GetComponent<Block>();
-          // block.CreateAnimation();
+            block.CreateAnimation();
         }
 
         work.addBlockList.Add(blockGo);

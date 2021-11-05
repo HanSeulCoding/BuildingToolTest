@@ -4,14 +4,26 @@ using UnityEngine;
 
 public class PlayerManager : MonoBehaviour
 {
+    public static PlayerManager instance;
     enum Mode
     {
         Insert, //추가 모드
-        Delete  //삭제 모드
+        Delete,
+        BlockSelect  
     }
+
+    public bool isTranslateScale;
+    public Vector3 mouseOnClickPosition;
+    public Vector3 currentMousePosition;
+
     private Mode mCurrentMode = Mode.Insert;
     private bool mIsLookAtMove;
-
+    private GameObject blockObj;
+    private Ray mCameraHitRay = new Ray();
+    private void Awake()
+    {
+        instance = this;
+    }
     private void Start()
     {
         mIsLookAtMove = false;
@@ -22,18 +34,42 @@ public class PlayerManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Insert) == true)
             mCurrentMode = Mode.Insert;
-        if (Input.GetKeyDown(KeyCode.Delete) == true)
-            mCurrentMode = Mode.Delete;
+        //if (Input.GetKeyDown(KeyCode.Delete) == true)
+        //    mCurrentMode = Mode.Delete;
 
 
-        BlockAddAndRemoveUpdate();
+        BlockManageUpdate();
         BlockTypeSelect(); //블럭 타입 선택
     }
 
-    private void BlockAddAndRemoveUpdate()
+    private GameObject BlockClick()
     {
+        mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+     
+        RaycastHit hit;
+        if (Physics.Raycast(mCameraHitRay, out hit) == true)
+        {
+            if(hit.transform.gameObject.layer == 7)
+            {
+                BlockSelectImg.instance.SetActive(true);
+                Block block = hit.transform.gameObject.GetComponent<Block>();
+                block.isPrintUI = true;
+                mCurrentMode = Mode.BlockSelect;
+                blockObj = hit.transform.gameObject;
+            }
+            Debug.Log("hit");
+        }
+        return blockObj;
+    }
+
+    private void BlockManageUpdate()
+    {
+        
+            
+
         if (Input.GetMouseButtonDown(0) == true)
         {
+            GameObject block = BlockClick();
             switch (mCurrentMode)
             {
                 //case Mode.Delete:
@@ -46,7 +82,14 @@ public class PlayerManager : MonoBehaviour
                         Builder.Instance.AddBlock();
                     }
                     break;
+                case Mode.BlockSelect:
+                    {
+                       // if (Input.GetMouseButton(0))
+
+                    }
+                    break;
             }
+           
         }
     }
     private void BlockTypeSelect()
