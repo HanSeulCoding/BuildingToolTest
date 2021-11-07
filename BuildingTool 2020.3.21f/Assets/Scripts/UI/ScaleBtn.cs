@@ -10,6 +10,12 @@ public class ScaleBtn : MonoBehaviour
         PlayerManager.instance.mouseOnClickPosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y,
                -Camera.main.transform.position.z));
         PlayerManager.instance.isTranslateScale = true;
+        Debug.Log("Click");
 
+    }
+    public void EndDrag()
+    {
+        PlayerManager.instance.isTranslateScale = false;
+        Debug.Log("EndClick");
     }
 }

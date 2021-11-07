@@ -5,20 +5,32 @@ using UnityEngine;
 public class PlayerManager : MonoBehaviour
 {
     public static PlayerManager instance;
-    enum Mode
+    public enum Mode
     {
         Insert, //추가 모드
         Delete,
         BlockSelect  
     }
-
+    [HideInInspector]
     public bool isTranslateScale;
+
+    [HideInInspector]
     public Vector3 mouseOnClickPosition;
+
+    [HideInInspector]
     public Vector3 currentMousePosition;
 
-    private Mode mCurrentMode = Mode.Insert;
+    [HideInInspector]
+    public Vector3 _clickNormal;
+
+    [HideInInspector]
+    public Mode mCurrentMode = Mode.Insert;
+
+    [HideInInspector]
+    public GameObject clickedBlock;
+
     private bool mIsLookAtMove;
-    private GameObject blockObj;
+    
     private Ray mCameraHitRay = new Ray();
     private void Awake()
     {
@@ -42,25 +54,7 @@ public class PlayerManager : MonoBehaviour
         BlockTypeSelect(); //블럭 타입 선택
     }
 
-    private GameObject BlockClick()
-    {
-        mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-     
-        RaycastHit hit;
-        if (Physics.Raycast(mCameraHitRay, out hit) == true)
-        {
-            if(hit.transform.gameObject.layer == 7)
-            {
-                BlockSelectImg.instance.SetActive(true);
-                Block block = hit.transform.gameObject.GetComponent<Block>();
-                block.isPrintUI = true;
-                mCurrentMode = Mode.BlockSelect;
-                blockObj = hit.transform.gameObject;
-            }
-            Debug.Log("hit");
-        }
-        return blockObj;
-    }
+    
 
     private void BlockManageUpdate()
     {
@@ -69,7 +63,8 @@ public class PlayerManager : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0) == true)
         {
-            GameObject block = BlockClick();
+            Builder.Instance.BlockClick();
+            //GameObject block = 
             switch (mCurrentMode)
             {
                 //case Mode.Delete:
@@ -82,14 +77,19 @@ public class PlayerManager : MonoBehaviour
                         Builder.Instance.AddBlock();
                     }
                     break;
-                case Mode.BlockSelect:
-                    {
-                       // if (Input.GetMouseButton(0))
-
-                    }
-                    break;
             }
            
+        }
+        if(mCurrentMode == Mode.BlockSelect)
+        {
+            if(isTranslateScale)
+            {
+                if(clickedBlock != null)
+                {
+                    Block block = clickedBlock.GetComponent<Block>();
+                    block.TranslateScale(mouseOnClickPosition,_clickNormal);
+                }
+            }
         }
     }
     private void BlockTypeSelect()

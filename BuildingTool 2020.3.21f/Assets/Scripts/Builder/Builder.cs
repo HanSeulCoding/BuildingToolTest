@@ -65,4 +65,37 @@ public class Builder : MonoBehaviour
     }
     Vector2 rotation = Vector2.zero;
 
+    public void BlockClick()
+    {
+        mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+  
+        RaycastHit hit;
+
+        if (Physics.Raycast(mCameraHitRay, out hit) == true)
+        {
+            if (hit.transform.gameObject.layer == 7)
+            {
+                BlockSelectImg.instance.SetActive(true);
+                Block block = hit.transform.gameObject.GetComponent<Block>();
+                block.isPrintUI = true;            
+                
+                PlayerManager.instance.mCurrentMode = PlayerManager.Mode.BlockSelect;
+                PlayerManager.instance.clickedBlock = hit.transform.gameObject;
+                PlayerManager.instance._clickNormal = hit.normal;
+                Debug.Log("hit");
+            }
+            else
+            {
+                if(PlayerManager.instance.clickedBlock != null)  //block 외의 것 클릭 시 
+                { 
+                    PlayerManager.instance.clickedBlock.GetComponent<Block>().isPrintUI = false; //block Click UI 출력 X 
+                    BlockSelectImg.instance.SetActive(false);  //block UI Active false 처리
+                    PlayerManager.instance.mCurrentMode = PlayerManager.Mode.Insert; //Mode->Insert mode 수정
+                }
+            }
+
+
+        }
+    }
+
 }

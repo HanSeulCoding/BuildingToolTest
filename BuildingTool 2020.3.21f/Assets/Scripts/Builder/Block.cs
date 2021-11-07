@@ -39,15 +39,17 @@ public class Block : MonoBehaviour
     public void CreatePointUI() //block 클릭 후 8개의 Point UI 생성 
     {
         List<Vector3> blocksPos = new List<Vector3>();
+        Vector3 temp = new Vector3(transform.localScale.x/2.0f, transform.localScale.y/2.0f,transform.localScale.z/2.0f);
+        Vector3 divide = new Vector3(temp.x / 100.0f, temp.y / 100.0f, temp.z / 100.0f);
         Vector3 blockPos = transform.position;
-        Vector3 pos1 = new Vector3(transform.position.x - (float)0.5, transform.position.y - (float)0.5, transform.position.z + (float)0.5);
-        Vector3 pos2 = new Vector3(transform.position.x + (float)0.5, transform.position.y - (float)0.5, transform.position.z + (float)0.5);
-        Vector3 pos3 = new Vector3(transform.position.x - (float)0.5, transform.position.y - (float)0.5, transform.position.z - (float)0.5);
-        Vector3 pos4 = new Vector3(transform.position.x + (float)0.5, transform.position.y - (float)0.5, transform.position.z - (float)0.5);
-        Vector3 pos5 = new Vector3(transform.position.x - (float)0.5, transform.position.y + (float)0.5, transform.position.z + (float)0.5);
-        Vector3 pos6 = new Vector3(transform.position.x + (float)0.5, transform.position.y + (float)0.5, transform.position.z + (float)0.5);
-        Vector3 pos7 = new Vector3(transform.position.x - (float)0.5, transform.position.y + (float)0.5, transform.position.z - (float)0.5);
-        Vector3 pos8 = new Vector3(transform.position.x + (float)0.5, transform.position.y + (float)0.5, transform.position.z - (float)0.5);
+        Vector3 pos1 = new Vector3(transform.position.x - (float)divide.x, transform.position.y - (float)divide.y, transform.position.z + (float)divide.z) ;
+        Vector3 pos2 = new Vector3(transform.position.x + (float)divide.x, transform.position.y - (float)divide.y, transform.position.z + (float)divide.z);
+        Vector3 pos3 = new Vector3(transform.position.x - (float)divide.x, transform.position.y - (float)divide.y, transform.position.z - (float)divide.z);
+        Vector3 pos4 = new Vector3(transform.position.x + (float)divide.x, transform.position.y - (float)divide.y, transform.position.z - (float)divide.z);
+        Vector3 pos5 = new Vector3(transform.position.x - (float)divide.x, transform.position.y + (float)divide.y, transform.position.z + (float)divide.z);
+        Vector3 pos6 = new Vector3(transform.position.x + (float)divide.x, transform.position.y + (float)divide.y, transform.position.z + (float)divide.z);
+        Vector3 pos7 = new Vector3(transform.position.x - (float)divide.x, transform.position.y + (float)divide.y, transform.position.z - (float)divide.z);
+        Vector3 pos8 = new Vector3(transform.position.x + (float)divide.x, transform.position.y + (float)divide.y, transform.position.z - (float)divide.z);
 
         blocksPos.Add(Camera.main.WorldToScreenPoint(pos1));
         blocksPos.Add(Camera.main.WorldToScreenPoint(pos2));
@@ -84,7 +86,7 @@ public class Block : MonoBehaviour
         return -1;
     }
 
-    private void TranslateScale()
+    public void TranslateScale(Vector3 clickMousePosition, Vector3 _normal)
     {
         if(PlayerManager.instance.isTranslateScale)
         {
@@ -92,9 +94,15 @@ public class Block : MonoBehaviour
                 -Camera.main.transform.position.z));// Input.mousePosition;
             float distance = Vector3.Distance(PlayerManager.instance.mouseOnClickPosition, currentMouseP);
             Debug.Log(currentMouseP);
-            if(distance > 0.5)
+            if(distance > 1.0)
             {
-                
+                Vector3 addScale = new Vector3((float)2, (float)2, (float)2);
+                Vector3 transScale = Vector3.Scale(addScale, _normal);
+                Vector3 addDist = new Vector3(transform.localScale.x + distance, transform.localScale.y + distance, transform.localScale.z + distance);
+                //Vector3 gobScale = Vector3.Scale(transform.localP)
+                Debug.Log("distance Over");
+                // Vector3 transScale = ne
+                transform.localScale = addDist;
             }
         }
     }
