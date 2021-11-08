@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class Builder : MonoBehaviour
 {
@@ -16,11 +17,13 @@ public class Builder : MonoBehaviour
     [Header("Vertical Speed")]
     public float camVerticalSpeed = 5f;
 
+    private Block prevBlock;
     private Ray mCameraHitRay = new Ray();
 
-    private int blockSelectIndex = 0;
-   
-
+    [HideInInspector]
+    public int blockSelectIndex = 0;
+     
+    
     private void InitSetting()
     {
    
@@ -38,6 +41,25 @@ public class Builder : MonoBehaviour
         blockSelectIndex = _index;
         RootCanvas.instance.SelectBlock(_index);
     }
+
+    public void VisibleAddBlock(Vector3 mosuePosition, Vector3 upMousePositino)
+    {
+        mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        RaycastHit hit;
+        if (Physics.Raycast(mCameraHitRay, out hit) == true)
+        {
+            if (hit.transform.gameObject.layer != 7 && hit.transform.gameObject.layer != 6)
+                return;
+
+            switch (hit.transform.gameObject.layer)
+            {
+                case 6:
+                    WorldGenerator.Instance.VisibleAddBlock(blockSelectIndex, mosuePosition, upMousePositino,true);
+                    break;
+            }
+        }
+    }
     public void AddBlock()
     {
         mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -48,15 +70,13 @@ public class Builder : MonoBehaviour
             if (hit.transform.gameObject.layer != 7 && hit.transform.gameObject.layer != 6)
                 return;
 
-          //  Debug.Log("Add Block" + hit.transform.name);
-
             switch (hit.transform.gameObject.layer)
             {
                 case 7:
-                    WorldGenerator.Instance.AddBlock(blockSelectIndex, hit.transform.gameObject.layer, hit.transform.position, hit.normal, true);
+                    WorldGenerator.Instance.AddBlock(blockSelectIndex, hit.transform.gameObject.layer, hit.transform.position, hit.normal, true,false);
                     break;
                 case 6:
-                    WorldGenerator.Instance.AddBlock(blockSelectIndex, hit.transform.gameObject.layer, hit.point, hit.normal, true);
+                    WorldGenerator.Instance.AddBlock(blockSelectIndex, hit.transform.gameObject.layer, hit.point, hit.normal, true,false);
                     break;
             }
 
@@ -71,12 +91,16 @@ public class Builder : MonoBehaviour
   
         RaycastHit hit;
 
+        if (prevBlock != null)
+            prevBlock.isPrintUI = false;
+
         if (Physics.Raycast(mCameraHitRay, out hit) == true)
         {
-            if (hit.transform.gameObject.layer == 7)
+             if (hit.transform.gameObject.layer == 7)
             {
                 BlockSelectImg.instance.SetActive(true);
                 Block block = hit.transform.gameObject.GetComponent<Block>();
+                prevBlock = block;
                 block.isPrintUI = true;            
                 
                 PlayerManager.instance.mCurrentMode = PlayerManager.Mode.BlockSelect;
@@ -84,18 +108,20 @@ public class Builder : MonoBehaviour
                 PlayerManager.instance._clickNormal = hit.normal;
                 Debug.Log("hit");
             }
-            else
+            else 
             {
                 if(PlayerManager.instance.clickedBlock != null)  //block 외의 것 클릭 시 
                 { 
                     PlayerManager.instance.clickedBlock.GetComponent<Block>().isPrintUI = false; //block Click UI 출력 X 
-                    BlockSelectImg.instance.SetActive(false);  //block UI Active false 처리
-                    PlayerManager.instance.mCurrentMode = PlayerManager.Mode.Insert; //Mode->Insert mode 수정
+                    BlockSelectImg.instance.SetActive(false);  
                 }
             }
-
-
         }
+    }
+
+    public void DragCreateBlock()
+    {
+
     }
 
 }

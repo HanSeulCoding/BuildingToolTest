@@ -4,10 +4,17 @@ using UnityEngine;
 
 public class Block : MonoBehaviour
 {
+    [HideInInspector]
     public bool isPrintUI;
 
+    [HideInInspector]
+    public Position position;
     // Start is called before the first frame update
 
+    private void Start()
+    {
+        position = new Position();
+    }
     private void Update()
     {
         if (isPrintUI)
@@ -93,17 +100,45 @@ public class Block : MonoBehaviour
             Vector3 currentMouseP = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y,
                 -Camera.main.transform.position.z));// Input.mousePosition;
             float distance = Vector3.Distance(PlayerManager.instance.mouseOnClickPosition, currentMouseP);
-            Debug.Log(currentMouseP);
+            //Debug.Log(currentMouseP);
             if(distance > 1.0)
             {
                 Vector3 addScale = new Vector3((float)2, (float)2, (float)2);
                 Vector3 transScale = Vector3.Scale(addScale, _normal);
                 Vector3 addDist = new Vector3(transform.localScale.x + distance, transform.localScale.y + distance, transform.localScale.z + distance);
                 //Vector3 gobScale = Vector3.Scale(transform.localP)
-                Debug.Log("distance Over");
+                //Debug.Log("distance Over");
                 // Vector3 transScale = ne
                 transform.localScale = addDist;
             }
         }
     }
+    public void TranslatePosition()
+    {
+        position = Math.instance.TransLocalPosition(transform.position);
+    }
+    public void TransWorldPosition()
+    {
+        transform.position = Math.instance.TransWorldPosition(position);
+    }
+    void OnMouseDown()
+    {
+        //Vector3 dragMosuePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        //string mosuePos = dragMosuePos.ToString();
+        //Debug.Log(mosuePos);
+    }
+    private void OnMouseDrag()
+    {
+        Vector3 dragMosuePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        string mosuePos = dragMosuePos.ToString();
+        //Debug.Log("Mouse Drag"+mosuePos);
+    }
+    private void OnMouseUp()
+    {
+        Vector3 dragMosuePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        string mosuePos = dragMosuePos.ToString();
+        //Debug.Log("MouseUp" + mosuePos);
+    }
+
+
 }

@@ -44,6 +44,10 @@ public class GridGenerator : MonoBehaviour
         detailGridT = GameObject.Find("DetailGrid");
         pos = this.transform.position;
 
+       // lineNum = WorldGenerator.Instance.columnSize;
+       // detailLineNum = WorldGenerator.Instance.columnSize;
+      //  lineLength = WorldGenerator.Instance.columnSize;
+
         horizonLines(rowSize, lineNum, transform, false);
         verticalLines(columnSize, lineNum, transform, false);
         horizonLines(detailRowSize, detailLineNum, detailGridT.transform, true);
