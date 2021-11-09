@@ -122,6 +122,26 @@ public class Block : MonoBehaviour
     public void TransWorldPosition()
     {
         transform.position = Math.instance.TransWorldPosition(position);
+        ExceptZero(transform.position);
+    
+    }
+    private void ExceptZero(Vector3 position)
+    {
+        float oneHalfTileSize = (float)(WorldGenerator.Instance.rowSize / (10 *2));
+        if (this.position.x == 0)
+        {
+            if(position.x < 0)
+            {
+                transform.position = new Vector3(transform.position.x - 0.5f, transform.position.y, transform.position.z);
+            }
+        }
+        if(this.position.z == 0)
+        {
+            if(position.z < 0)
+            {
+                transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z - 0.5f);
+            }
+        }
     }
     void OnMouseDown()
     {

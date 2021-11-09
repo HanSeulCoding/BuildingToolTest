@@ -33,18 +33,15 @@ public class PlayerManager : MonoBehaviour
     [HideInInspector]
     public GameObject clickedBlock;
     private Position prevPosition = new Position();
-    private int isScaleModify;
+
     private bool mIsLookAtMove;
-    private Vector3 dragMosuePos;
+
     private Ray mCameraHitRay = new Ray();
     private void Awake()
     {
         instance = this;
     }
-    private void Start()
-    {
-        mIsLookAtMove = false;
-    }
+  
     private void Update()
     {
         //BuilderMoveUpdate();
@@ -88,7 +85,6 @@ public class PlayerManager : MonoBehaviour
             if (Physics.Raycast(mCameraHitRay, out hit) == true)
             {
                 mouseOnClickPosition = hit.point;
-                WorldGenerator.Instance.prevCurrentpos = Math.instance.TransLocalPosition(hit.point);
             }
         }
         if (Input.GetMouseButton(0) == true)
@@ -159,18 +155,7 @@ public class PlayerManager : MonoBehaviour
 
         }
     }
-     
-     void OnMouseDrag()
-    {
-        Vector3 dragMosuePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        string mosuePos = dragMosuePos.ToString();
-        Debug.Log(mosuePos);
-    }
-   
-    public void DragDrop()
-    {
-
-    }
+    
     private void BlockTypeSelect()
     {
         if (Input.GetKey(KeyCode.Alpha1) == true)

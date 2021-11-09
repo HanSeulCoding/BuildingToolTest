@@ -134,13 +134,17 @@ public class WorldGenerator : MonoBehaviour
     }
     public void VisibleAddBlock(int _blockSelect, Vector3 clickMousePos, Vector3 currentMousePos, bool _isAnimation)
     {
+        Debug.Log("currenMouse" + currentMousePos);
         Position clickPos = Math.instance.TransLocalPosition(clickMousePos);
         Position currentpos = Math.instance.TransLocalPosition(currentMousePos);
-
+        Debug.Log("localCu: (" + "X: "+currentpos.x +"Z: "+ currentpos.z+")");
+        if (currentpos.x >= 50 || currentpos.x <= -50
+            || currentpos.z >= 50 || currentpos.z <= -50)
+            return;
+        
         int xNum = currentpos.x - clickPos.x;
         int zNum = currentpos.z - clickPos.z;
-        //int xNum = currentpos.x - prevCurrentpos.x;
-        //int zNum = currentpos.z - prevCurrentpos.z;
+  
 
         if (xNum >= 0)
         {
@@ -156,7 +160,7 @@ public class WorldGenerator : MonoBehaviour
                        // count++;
                     }
                 }
-                if (zNum >= 0)
+                if (zNum > 0)
                 {
                     for (int z = clickPos.z; z <= currentpos.z; z++)
                     {
@@ -168,7 +172,7 @@ public class WorldGenerator : MonoBehaviour
 
             }
         }
-        if (xNum <= 0)
+        if (xNum < 0)
         {
             for (int i = clickPos.x; i >= currentpos.x; i--)
             {
@@ -181,7 +185,7 @@ public class WorldGenerator : MonoBehaviour
                         //count++;
                     }
                 }
-                if (zNum >= 0)
+                if (zNum > 0)
                 {
                     for (int z = clickPos.z; z <= currentpos.z; z++)
                     {
@@ -215,12 +219,13 @@ public class WorldGenerator : MonoBehaviour
                 poolingBlock.isVisible = true;
                 poolingBlock.transform.position = new Vector3(x, (float)poolingBlock.transform.position.y,
                                   z);
-            
-                string test = "x : " + poolingBlock.position.x.ToString() + "Y :"+poolingBlock.position.y.ToString() + 
-                    "Z : "+ poolingBlock.position.z.ToString();
-                Debug.Log(test);
 
                 poolingBlock.TranslatePosition();
+                string test = "x : " + poolingBlock.position.x.ToString() + "Y :"+poolingBlock.position.y.ToString() + 
+                    "Z : "+ poolingBlock.position.z.ToString();
+                //Debug.Log(test);
+
+              
                 poolingBlock.TransWorldPosition();
             
                 break;
