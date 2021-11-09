@@ -46,20 +46,21 @@ public class WorldGenerator : MonoBehaviour
     [Header("»ý¼º ¸ðµ¨10")]
     public GameObject addBlock10;
 
-
-    [HideInInspector]
-    public Vector3 mouseClickPosition;
-
+    private GameObject poolingBlock;
     private GameObject bottomFloor;
     private Transform addTransform;
     private Transform poolingBlockTransform;
+
     private List<Block> poolingBlockList = new List<Block>();
-    private GameObject poolingBlock;
     private Work work;
 
     private int count;
+
     [HideInInspector]
     public List<GameObject> addBlockList = new List<GameObject>();
+
+    [HideInInspector]
+    public Position prevCurrentpos;
 
     private void Awake()
     {
@@ -74,14 +75,17 @@ public class WorldGenerator : MonoBehaviour
         bottomFloor.transform.localScale = new Vector3(rowSize, 1, columnSize);
 
         poolingBlock = Resources.Load<GameObject>("Blocks/block"); //pooling block ¸¸µé±â
+        poolingBlock.SetActive(false);
         poolingBlockTransform = GameObject.Find("PoolingBlock").transform;
-       
 
-        for(int i=0;i<rowSize;i++) //PoolingBlock Instantiate 
+        poolingBlock.gameObject.transform.position = new Vector3(0, 0, 0);
+        for (int i=0;i<100;i++) //PoolingBlock Instantiate 
         {
-            for(int j =0;j<columnSize;j++)
+            for(int j =0;j<100;j++)
             {
                 poolingBlockList.Add(Instantiate(poolingBlock, poolingBlockTransform).GetComponent<Block>());
+                //poolingBlockList[i * j].gameObject.SetActive(true);
+
             }
         }
 
@@ -130,24 +134,168 @@ public class WorldGenerator : MonoBehaviour
     }
     public void VisibleAddBlock(int _blockSelect, Vector3 clickMousePos, Vector3 currentMousePos, bool _isAnimation)
     {
-
         Position clickPos = Math.instance.TransLocalPosition(clickMousePos);
         Position currentpos = Math.instance.TransLocalPosition(currentMousePos);
 
-        //Debug.Log("click" + clickPos.x.ToString());
-        //Debug.Log("currentPos" + currentpos.x.ToString());
-        if (clickPos.x < currentpos.x)
+        int xNum = currentpos.x - clickPos.x;
+        int zNum = currentpos.z - clickPos.z;
+        //int xNum = currentpos.x - prevCurrentpos.x;
+        //int zNum = currentpos.z - prevCurrentpos.z;
+
+        if (xNum >= 0)
         {
-            for (int i = clickPos.x; i < currentpos.x; i++)
+            for (int i = clickPos.x; i <= currentpos.x; i++)
             {
-                poolingBlockList[count].transform.position = currentMousePos;
-                poolingBlockList[count].TranslatePosition();
-                poolingBlockList[count].TransWorldPosition();
+                if (zNum <= 0)
+                {
+                    for (int z = clickPos.z; z >= currentpos.z; z--)
+                    {
+
+                        SetVisiblePosition(i, z);
+                        //RemoveVisibleBlock(clickPos, currentpos);
+                       // count++;
+                    }
+                }
+                if (zNum >= 0)
+                {
+                    for (int z = clickPos.z; z <= currentpos.z; z++)
+                    {
+                        SetVisiblePosition(i, z);
+                       // RemoveVisibleBlock(clickPos, currentpos);
+                       // count++;
+                    }
+                }
+
             }
         }
-        Vector3 delta = clickMousePos - currentMousePos;
-        
-        
+        if (xNum <= 0)
+        {
+            for (int i = clickPos.x; i >= currentpos.x; i--)
+            {
+                if (zNum <= 0)
+                {
+                    for (int z = clickPos.z; z >= currentpos.z; z--)
+                    {
+                        SetVisiblePosition(i, z);
+                        //RemoveVisibleBlock(clickPos, currentpos);
+                        //count++;
+                    }
+                }
+                if (zNum >= 0)
+                {
+                    for (int z = clickPos.z; z <= currentpos.z; z++)
+                    {
+                        SetVisiblePosition(i, z);
+                        //RemoveVisibleBlock(clickPos, currentpos);
+                       // count++;
+                    }
+                }
+            }
+        }
+       // RemoveVisibleBlock(clickPos, currentpos);
+        //prevCurrentpos = currentpos;
+    }
+    public void SetVisiblePosition(int x, int z)
+    {
+        foreach (Block poolingBlock in poolingBlockList)
+        {
+            //if (poolingBlock.position.x == x && poolingBlock.position.z == z)
+            //{ 
+            //    poolingBlock.gameObject.SetActive(false);
+            //    return;
+            //}
+        }
+        foreach(Block poolingBlock in poolingBlockList)
+        {
+            if (!poolingBlock.isVisible)
+            {
+                if (poolingBlock.gameObject.activeSelf == false)
+                    poolingBlock.gameObject.SetActive(true);
+
+                poolingBlock.isVisible = true;
+                poolingBlock.transform.position = new Vector3(x, (float)poolingBlock.transform.position.y,
+                                  z);
+            
+                string test = "x : " + poolingBlock.position.x.ToString() + "Y :"+poolingBlock.position.y.ToString() + 
+                    "Z : "+ poolingBlock.position.z.ToString();
+                Debug.Log(test);
+
+                poolingBlock.TranslatePosition();
+                poolingBlock.TransWorldPosition();
+            
+                break;
+            }
+        }
+        //foreach (Block poolingBlock in poolingBlockList)
+        //{
+        //    if (poolingBlock.isVisible)
+        //    {
+        //        if(poolingBlock.position.x != x && poolingBlock.position.z != z)
+        //        {
+        //            poolingBlock.gameObject.SetActive(false);
+        //        }
+
+        //    }
+        //}
+
+
+    }
+    public void RemoveVisibleBlock(Position clickPos, Position currentPos)
+    {
+        int xNum = currentPos.x - clickPos.x;
+        int zNum = currentPos.z - clickPos.z;
+
+        if (xNum >= 0)
+        {
+            if (zNum <= 0)
+            {
+                foreach (Block blocks in poolingBlockList)
+                {
+                    if (blocks.isVisible)
+                    {
+                        if (blocks.position.x > xNum || blocks.position.z < zNum)
+                            blocks.gameObject.SetActive(false);
+                    }
+                }
+            }
+            if (zNum >= 0)
+            {
+                foreach (Block blocks in poolingBlockList)
+                {
+                    if (blocks.isVisible)
+                    {
+                        if (blocks.position.x > xNum || blocks.position.z > zNum)
+                            blocks.gameObject.SetActive(false);
+                    }
+                }
+            }
+        }
+        if (xNum <= 0)
+        {
+            
+            if (zNum <= 0)
+            {
+                foreach (Block blocks in poolingBlockList)
+                {
+                    if (blocks.isVisible)
+                    {
+                        if (blocks.position.x < xNum || blocks.position.z < zNum)
+                            blocks.gameObject.SetActive(false);
+                    }
+                }
+            }
+            if (zNum >= 0)
+            {
+                foreach (Block blocks in poolingBlockList)
+                {
+                    if (blocks.isVisible)
+                    {
+                        if (blocks.position.x < xNum || blocks.position.z > zNum)
+                            blocks.gameObject.SetActive(false);
+                    }
+                }
+            }
+        }
     }
     public void AddBlock(int _blockSelect, int _layer, Vector3 _pos, Vector3 _normal, bool _isAnimation, bool isVisible)
     {
@@ -167,10 +315,10 @@ public class WorldGenerator : MonoBehaviour
             //¹Ù´Ú¿¡ ´ê¾ÒÀ» ¶§
             case 6:
                 {
-                    Vector3 pos = _pos;
+               
 
                     //Debug.Log(pos);
-                    blockGo.transform.position = _pos;
+                
                     Block block = blockGo.GetComponent<Block>();
                     block.TranslatePosition();
                     block.TransWorldPosition();

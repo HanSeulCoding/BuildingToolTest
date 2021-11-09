@@ -8,7 +8,9 @@ public class Block : MonoBehaviour
     public bool isPrintUI;
 
     [HideInInspector]
-    public Position position;
+    public bool isVisible = false;
+    [HideInInspector]
+    public Position position = new Position();
     // Start is called before the first frame update
 
     private void Start()

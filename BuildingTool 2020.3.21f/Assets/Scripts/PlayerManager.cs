@@ -32,7 +32,7 @@ public class PlayerManager : MonoBehaviour
 
     [HideInInspector]
     public GameObject clickedBlock;
-
+    private Position prevPosition = new Position();
     private int isScaleModify;
     private bool mIsLookAtMove;
     private Vector3 dragMosuePos;
@@ -78,26 +78,31 @@ public class PlayerManager : MonoBehaviour
 
     private void BlockManageUpdate()
     {
+        
+        Position currentPosition;
+        RaycastHit hit;
+        mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+
         if (Input.GetMouseButtonDown(0) == true)
         {
-            RaycastHit hit;
-            mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(mCameraHitRay, out hit) == true)
             {
-                //mouseOnClickPosition = hit.point;
-                WorldGenerator.Instance.mouseClickPosition = hit.point;
+                mouseOnClickPosition = hit.point;
+                WorldGenerator.Instance.prevCurrentpos = Math.instance.TransLocalPosition(hit.point);
             }
         }
         if (Input.GetMouseButton(0) == true)
         {
-            RaycastHit hit;
-            mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(mCameraHitRay, out hit) == true)
             {
                 currentMousePosition = hit.point;
-                Debug.Log("current"+ hit.point);
             }
-            WorldGenerator.Instance.VisibleAddBlock(Builder.Instance.blockSelectIndex, mouseOnClickPosition, currentMousePosition, true);
+            currentPosition = Math.instance.TransLocalPosition(currentMousePosition);
+
+            if(currentPosition.x != prevPosition.x || currentPosition.z != prevPosition.z)
+                WorldGenerator.Instance.VisibleAddBlock(Builder.Instance.blockSelectIndex, mouseOnClickPosition, currentMousePosition, true);
+
+            prevPosition = Math.instance.TransLocalPosition(currentMousePosition);
         }
 
         //if (Input.GetMouseButtonDown(0) == true)
