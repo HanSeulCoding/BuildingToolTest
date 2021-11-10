@@ -141,63 +141,64 @@ public class WorldGenerator : MonoBehaviour
         if (currentpos.x >= 50 || currentpos.x <= -50
             || currentpos.z >= 50 || currentpos.z <= -50)
             return;
+
+        RectMake(clickPos, currentpos);
+
         
-        int xNum = currentpos.x - clickPos.x;
-        int zNum = currentpos.z - clickPos.z;
-  
 
-        if (xNum >= 0)
+       
+    }
+    private void RectMake(Position clickPos, Position currentPos)
+    {
+        int xWidth = currentPos.x - clickPos.x;
+        int zHeight = currentPos.z - clickPos.z;
+
+        Vector2Int rectBottomLeft = new Vector2Int();
+        Vector2Int rectTopLeft = new Vector2Int();
+        Vector2Int rectBottomRight = new Vector2Int();
+        Vector2Int rectTopRight = new Vector2Int();
+
+        if (xWidth < 0 && zHeight < 0)
         {
-            for (int i = clickPos.x; i <= currentpos.x; i++)
+            rectBottomLeft = new Vector2Int(currentPos.x, currentPos.z);
+            rectTopLeft = new Vector2Int((int)currentPos.x, (int)clickPos.z);
+            rectBottomRight = new Vector2Int(clickPos.x, currentPos.z);
+            rectTopRight = new Vector2Int(clickPos.x, clickPos.z);
+        }
+        else if( xWidth < 0 && zHeight > 0)
+        {
+            rectBottomLeft = new Vector2Int(currentPos.x, clickPos.z);
+            rectTopLeft = new Vector2Int(currentPos.x, currentPos.z); 
+            rectBottomRight = new Vector2Int(clickPos.x, clickPos.z);
+            rectTopRight = new Vector2Int(clickPos.x, currentPos.z); 
+        }
+        else if( xWidth > 0 && zHeight > 0)
+        {
+            rectBottomLeft = new Vector2Int(clickPos.x, clickPos.z); 
+            rectTopLeft = new Vector2Int(clickPos.x, currentPos.z);  
+            rectBottomRight = new Vector2Int(currentPos.x, clickPos.z); 
+            rectTopRight = new Vector2Int(currentPos.x, currentPos.z);  
+        }
+        else if (xWidth > 0 && zHeight < 0)
+        {
+            rectBottomLeft = new Vector2Int(clickPos.x, currentPos.z); 
+            rectTopLeft = new Vector2Int(clickPos.x, clickPos.z); // 
+            rectBottomRight = new Vector2Int(currentPos.x, currentPos.z);
+            rectTopRight = new Vector2Int(currentPos.x, clickPos.z);  
+        }
+
+        MakeVisibleBlock(rectTopLeft, rectBottomRight);
+
+    }
+    private void MakeVisibleBlock(Vector2Int rectTopLeft, Vector2Int rectBottomRight)
+    {
+        for (int i = rectTopLeft.x; i < rectBottomRight.x; i++)
+        {
+            for (int z = rectBottomRight.y; z < rectTopLeft.y; z++)
             {
-                if (zNum <= 0)
-                {
-                    for (int z = clickPos.z; z >= currentpos.z; z--)
-                    {
-
-                        SetVisiblePosition(i, z);
-                        //RemoveVisibleBlock(clickPos, currentpos);
-                       // count++;
-                    }
-                }
-                if (zNum > 0)
-                {
-                    for (int z = clickPos.z; z <= currentpos.z; z++)
-                    {
-                        SetVisiblePosition(i, z);
-                       // RemoveVisibleBlock(clickPos, currentpos);
-                       // count++;
-                    }
-                }
-
+                SetVisiblePosition(i, z);
             }
         }
-        if (xNum < 0)
-        {
-            for (int i = clickPos.x; i >= currentpos.x; i--)
-            {
-                if (zNum <= 0)
-                {
-                    for (int z = clickPos.z; z >= currentpos.z; z--)
-                    {
-                        SetVisiblePosition(i, z);
-                        //RemoveVisibleBlock(clickPos, currentpos);
-                        //count++;
-                    }
-                }
-                if (zNum > 0)
-                {
-                    for (int z = clickPos.z; z <= currentpos.z; z++)
-                    {
-                        SetVisiblePosition(i, z);
-                        //RemoveVisibleBlock(clickPos, currentpos);
-                       // count++;
-                    }
-                }
-            }
-        }
-       // RemoveVisibleBlock(clickPos, currentpos);
-        //prevCurrentpos = currentpos;
     }
     public void SetVisiblePosition(int x, int z)
     {
@@ -223,7 +224,7 @@ public class WorldGenerator : MonoBehaviour
                 poolingBlock.TranslatePosition();
                 string test = "x : " + poolingBlock.position.x.ToString() + "Y :"+poolingBlock.position.y.ToString() + 
                     "Z : "+ poolingBlock.position.z.ToString();
-                //Debug.Log(test);
+                Debug.Log(test);
 
               
                 poolingBlock.TransWorldPosition();
