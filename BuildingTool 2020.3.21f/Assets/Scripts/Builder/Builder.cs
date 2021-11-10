@@ -42,24 +42,6 @@ public class Builder : MonoBehaviour
         RootCanvas.instance.SelectBlock(_index);
     }
 
-    public void VisibleAddBlock(Vector3 mosuePosition, Vector3 upMousePositino)
-    {
-        mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        RaycastHit hit;
-        if (Physics.Raycast(mCameraHitRay, out hit) == true)
-        {
-            if (hit.transform.gameObject.layer != 7 && hit.transform.gameObject.layer != 6)
-                return;
-
-            switch (hit.transform.gameObject.layer)
-            {
-                case 6:
-                    WorldGenerator.Instance.VisibleAddBlock(blockSelectIndex, mosuePosition, upMousePositino,true);
-                    break;
-            }
-        }
-    }
     public void AddBlock()
     {
         mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);

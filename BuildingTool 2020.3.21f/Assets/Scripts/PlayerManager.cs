@@ -75,7 +75,7 @@ public class PlayerManager : MonoBehaviour
 
     private void BlockManageUpdate()
     {
-        
+
         Position currentPosition;
         RaycastHit hit;
         mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -92,13 +92,29 @@ public class PlayerManager : MonoBehaviour
             if (Physics.Raycast(mCameraHitRay, out hit) == true)
             {
                 currentMousePosition = hit.point;
+                switch (hit.transform.gameObject.layer)
+                {
+                    case 7:
+                        currentMousePosition.y = hit.transform.position.y + (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
+                        break;
+                    default:
+                        currentMousePosition.y = (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
+                        break;
+
+                }
+
+                
+                currentPosition = Math.instance.TransLocalPosition(currentMousePosition);
+
+               // if (currentPosition.x != prevPosition.x || currentPosition.z != prevPosition.z)
+                WorldGenerator.Instance.VisibleAddBlock(Builder.Instance.blockSelectIndex, mouseOnClickPosition, currentMousePosition);
+
+               // prevPosition = Math.instance.TransLocalPosition(currentMousePosition);
             }
-            currentPosition = Math.instance.TransLocalPosition(currentMousePosition);
-
-            if(currentPosition.x != prevPosition.x || currentPosition.z != prevPosition.z)
-                WorldGenerator.Instance.VisibleAddBlock(Builder.Instance.blockSelectIndex, mouseOnClickPosition, currentMousePosition, true);
-
-            prevPosition = Math.instance.TransLocalPosition(currentMousePosition);
+        }
+        if (Input.GetMouseButtonUp(0) == true)
+        {
+            WorldGenerator.Instance.BuildBlock();
         }
 
         //if (Input.GetMouseButtonDown(0) == true)
@@ -112,51 +128,52 @@ public class PlayerManager : MonoBehaviour
         //        //    break;
         //        case Mode.Insert:
         //            {
-                        
+
         //                Builder.Instance.AddBlock();
-                        
+
         //            }
         //            break;
         //    }
-           
+
         //}
         //if(Input.GetMouseButton(0) == true)
         //{
 
         //}
-      
+
         if (mCurrentMode == Mode.Insert)
-        {
-            RootCanvas.instance.PrintMode("Insert Mode");
-            if (clickedBlock != null) //기존에 보이던 Select Img 없애야함 
             {
-                Block block = clickedBlock.GetComponent<Block>();
-                block.isPrintUI = false;
-                BlockSelectImg.instance.SetActive(false);
-            }
-        }
-
-        if (mCurrentMode == Mode.BlockSelect) //block Click 시
-        {
-            RootCanvas.instance.PrintMode("Scale Modify Mode");
-
-            if (Input.GetMouseButton(0) == true)
-            {
-                Builder.Instance.BlockClick();
-            }
-            if (isTranslateScale) //Scale 변경 가능 시 
-            {
-                if (clickedBlock != null)
+                RootCanvas.instance.PrintMode("Insert Mode");
+                if (clickedBlock != null) //기존에 보이던 Select Img 없애야함 
                 {
-                    Block block = clickedBlock.GetComponent<Block>();  
-                    block.TranslateScale(mouseOnClickPosition, _clickNormal); //Block Scale 변경
+                    Block block = clickedBlock.GetComponent<Block>();
+                    block.isPrintUI = false;
+                    BlockSelectImg.instance.SetActive(false);
                 }
             }
 
-        }
-    }
+            if (mCurrentMode == Mode.BlockSelect) //block Click 시
+            {
+                RootCanvas.instance.PrintMode("Scale Modify Mode");
+
+                if (Input.GetMouseButton(0) == true)
+                {
+                    Builder.Instance.BlockClick();
+                }
+                if (isTranslateScale) //Scale 변경 가능 시 
+                {
+                    if (clickedBlock != null)
+                    {
+                        Block block = clickedBlock.GetComponent<Block>();
+                        block.TranslateScale(mouseOnClickPosition, _clickNormal); //Block Scale 변경
+                    }
+                }
+
+            }
+       }
     
-    private void BlockTypeSelect()
+    
+    public void BlockTypeSelect()
     {
         if (Input.GetKey(KeyCode.Alpha1) == true)
             Builder.Instance.AddBlockTypeSelect(0);

@@ -7,7 +7,7 @@ public class Work
     public List<int> removeBlockTypeList;
     public List<Vector3> removeBlockPosList;
 
-    public List<GameObject> addBlockList;
+    public List<Block> addBlockList;
 }
 public class WorldGenerator : MonoBehaviour
 {
@@ -18,6 +18,8 @@ public class WorldGenerator : MonoBehaviour
     public int rowSize;
     [Header("맵 세로 Size")]
     public int columnSize;
+    [Header("맵 Y축 Size")]
+    public int YSize;
     public enum Command
     {
         None,
@@ -54,13 +56,12 @@ public class WorldGenerator : MonoBehaviour
     private List<Block> poolingBlockList = new List<Block>();
     private Work work;
 
-    private int count;
-
     [HideInInspector]
     public List<GameObject> addBlockList = new List<GameObject>();
-
     [HideInInspector]
-    public Position prevCurrentpos;
+    public bool isBuild;
+    [HideInInspector]
+    public float visibleBlockY;
 
     private void Awake()
     {
@@ -74,7 +75,7 @@ public class WorldGenerator : MonoBehaviour
         bottomFloor = GameObject.Find("BottomFloor");
         bottomFloor.transform.localScale = new Vector3(rowSize, 1, columnSize);
 
-        poolingBlock = Resources.Load<GameObject>("Blocks/block"); //pooling block 만들기
+        poolingBlock = Resources.Load<GameObject>("Blocks/PoolingBlock"); //pooling block 만들기
         poolingBlock.SetActive(false);
         poolingBlockTransform = GameObject.Find("PoolingBlock").transform;
 
@@ -84,224 +85,184 @@ public class WorldGenerator : MonoBehaviour
             for(int j =0;j<100;j++)
             {
                 poolingBlockList.Add(Instantiate(poolingBlock, poolingBlockTransform).GetComponent<Block>());
-                //poolingBlockList[i * j].gameObject.SetActive(true);
-
             }
         }
 
         work = new Work();
-        work.addBlockList = new List<GameObject>();
+        work.addBlockList = new List<Block>();
         work.removeBlockPosList = new List<Vector3>();
         work.removeBlockTypeList = new List<int>();
     }
     // Start is called before the first frame update
 
-
-    void Start()
+    //PreBlock 정보 설정
+    public void VisibleAddBlock(int _blockSelect, Vector3 clickMousePos, Vector3 currentMousePos)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    public Vector3 PositionDivide(Vector3 _pos)
-    {
-        Vector3 pos = _pos;
-        int xInt = (int)pos.x;
-        float xFloat = pos.x - xInt;
-
-        if (xFloat > 0)
-            xFloat = 0.5f;
-        if (xFloat < 0)
-            xFloat = -0.5f;
-
-        int zInt = (int)pos.z;
-        float zFloat = pos.z - zInt;
-
-        if (zFloat > 0)
-            zFloat = 0.5f; 
-        if (zFloat < 0)
-            zFloat = -0.5f;
-
-        pos.x = xInt + xFloat;
-        pos.z = zInt + zFloat;
-
-        return pos + Vector3.up * 0.5f;
-    }
-    public void VisibleAddBlock(int _blockSelect, Vector3 clickMousePos, Vector3 currentMousePos, bool _isAnimation)
-    {
-        Debug.Log("currenMouse" + currentMousePos);
         Position clickPos = Math.instance.TransLocalPosition(clickMousePos);
         Position currentpos = Math.instance.TransLocalPosition(currentMousePos);
-        Debug.Log("localCu: (" + "X: "+currentpos.x +"Z: "+ currentpos.z+")");
-        if (currentpos.x >= 50 || currentpos.x <= -50
-            || currentpos.z >= 50 || currentpos.z <= -50)
+        if (currentpos.x > 50 || currentpos.x < -50
+            || currentpos.z > 50 || currentpos.z < -50)
             return;
 
         RectMake(clickPos, currentpos);
-
-        
-
-       
     }
+    //MouseClickposition에서 현재 마우스포지션의 안의 사각형 정보 추출 
     private void RectMake(Position clickPos, Position currentPos)
     {
         int xWidth = currentPos.x - clickPos.x;
         int zHeight = currentPos.z - clickPos.z;
 
-        Vector2Int rectBottomLeft = new Vector2Int();
         Vector2Int rectTopLeft = new Vector2Int();
         Vector2Int rectBottomRight = new Vector2Int();
-        Vector2Int rectTopRight = new Vector2Int();
+ 
 
-        if (xWidth < 0 && zHeight < 0)
+        if (xWidth <= 0 && zHeight <= 0) //오른쪽 위쪽에서 왼쪽 아래쪽으로 드래그
         {
-            rectBottomLeft = new Vector2Int(currentPos.x, currentPos.z);
+          //  rectBottomLeft = new Vector2Int(currentPos.x, currentPos.z);
             rectTopLeft = new Vector2Int((int)currentPos.x, (int)clickPos.z);
             rectBottomRight = new Vector2Int(clickPos.x, currentPos.z);
-            rectTopRight = new Vector2Int(clickPos.x, clickPos.z);
+           // rectTopRight = new Vector2Int(clickPos.x, clickPos.z);
         }
-        else if( xWidth < 0 && zHeight > 0)
+        else if( xWidth <= 0 && zHeight >= 0) // 오른쪽 아래쪽에서 왼쪽 위쪽으로 드래그
         {
-            rectBottomLeft = new Vector2Int(currentPos.x, clickPos.z);
+           // rectBottomLeft = new Vector2Int(currentPos.x, clickPos.z);
             rectTopLeft = new Vector2Int(currentPos.x, currentPos.z); 
             rectBottomRight = new Vector2Int(clickPos.x, clickPos.z);
-            rectTopRight = new Vector2Int(clickPos.x, currentPos.z); 
+           // rectTopRight = new Vector2Int(clickPos.x, currentPos.z); 
         }
-        else if( xWidth > 0 && zHeight > 0)
+        else if( xWidth >= 0 && zHeight >= 0) // 왼쪽 위쪽에서 오른쪽 아래쪽으로 드래그
         {
-            rectBottomLeft = new Vector2Int(clickPos.x, clickPos.z); 
+            //rectBottomLeft = new Vector2Int(clickPos.x, clickPos.z); 
             rectTopLeft = new Vector2Int(clickPos.x, currentPos.z);  
             rectBottomRight = new Vector2Int(currentPos.x, clickPos.z); 
-            rectTopRight = new Vector2Int(currentPos.x, currentPos.z);  
+          //  rectTopRight = new Vector2Int(currentPos.x, currentPos.z);  
         }
-        else if (xWidth > 0 && zHeight < 0)
+        else if (xWidth >= 0 && zHeight <= 0) //왼쪽 아래쪽에서 오른쪽 위쪽으로 드래그
         {
-            rectBottomLeft = new Vector2Int(clickPos.x, currentPos.z); 
-            rectTopLeft = new Vector2Int(clickPos.x, clickPos.z); // 
+           // rectBottomLeft = new Vector2Int(clickPos.x, currentPos.z); 
+            rectTopLeft = new Vector2Int(clickPos.x, clickPos.z); 
             rectBottomRight = new Vector2Int(currentPos.x, currentPos.z);
-            rectTopRight = new Vector2Int(currentPos.x, clickPos.z);  
+           // rectTopRight = new Vector2Int(currentPos.x, clickPos.z);  
         }
 
-        MakeVisibleBlock(rectTopLeft, rectBottomRight);
+        Debug.Log(rectTopLeft);
+        Debug.Log(rectBottomRight);
+
+        MakeVisibleBlock(rectTopLeft, rectBottomRight, currentPos.y);
+        RemoveVisibleBlock(rectTopLeft, rectBottomRight);
 
     }
-    private void MakeVisibleBlock(Vector2Int rectTopLeft, Vector2Int rectBottomRight)
+   //사각형 정보를 토대로 PreBlock 건설 
+    private void MakeVisibleBlock(Vector2Int rectTopLeft, Vector2Int rectBottomRight, int yLine)
     {
-        for (int i = rectTopLeft.x; i < rectBottomRight.x; i++)
+        if (rectTopLeft.y == rectBottomRight.y && rectTopLeft.x == rectBottomRight.x)
         {
-            for (int z = rectBottomRight.y; z < rectTopLeft.y; z++)
+            for (int y = 0; y <= yLine; y++)
+                SetVisiblePosition(rectBottomRight.x, y, rectBottomRight.y);
+        }
+
+        if (rectTopLeft.y == rectBottomRight.y) //세로가 같을 경우(일자로 쭉 세로로 건설할 경우)
+        {
+            for (int i = rectTopLeft.x; i < rectBottomRight.x; i++)
             {
-                SetVisiblePosition(i, z);
+                for (int y = 0; y <= yLine; y++)
+                    SetVisiblePosition(i, y, rectTopLeft.y);
+            }
+            return;
+        }
+        if (rectTopLeft.x == rectBottomRight.x) // 가로가 같을 경우 (일자로 쭉 가로로 건설할 경우)
+        {
+            for (int i = rectBottomRight.y; i < rectTopLeft.y; i++)
+            {
+                for (int y = 0; y <= yLine; y++)
+                    SetVisiblePosition(rectTopLeft.x,y, i);
+            }
+            return;
+        }
+        
+        for (int i = rectTopLeft.x; i <= rectBottomRight.x; i++) //그 외 일반 사각형 건설
+        {
+            for (int z = rectBottomRight.y; z <= rectTopLeft.y; z++)
+            {
+                for (int y = 0; y <= yLine; y++)
+                    SetVisiblePosition(i, y, z);
             }
         }
     }
-    public void SetVisiblePosition(int x, int z)
+    public void SetVisiblePosition(int x, int y, int z)
     {
         foreach (Block poolingBlock in poolingBlockList)
         {
-            //if (poolingBlock.position.x == x && poolingBlock.position.z == z)
-            //{ 
-            //    poolingBlock.gameObject.SetActive(false);
-            //    return;
-            //}
-        }
-        foreach(Block poolingBlock in poolingBlockList)
-        {
-            if (!poolingBlock.isVisible)
+            if (poolingBlock.gameObject.activeSelf == true)
             {
-                if (poolingBlock.gameObject.activeSelf == false)
-                    poolingBlock.gameObject.SetActive(true);
+                if ( poolingBlock.position.x == x &&  poolingBlock.position.z == z && poolingBlock.position.y == y) //중복검사(같은 곳 block 생성 X)
+                    break;
+            }
+            if (poolingBlock.gameObject.activeSelf == false)
+            {
+                poolingBlock.gameObject.SetActive(true);
 
-                poolingBlock.isVisible = true;
-                poolingBlock.transform.position = new Vector3(x, (float)poolingBlock.transform.position.y,
-                                  z);
-
-                poolingBlock.TranslatePosition();
-                string test = "x : " + poolingBlock.position.x.ToString() + "Y :"+poolingBlock.position.y.ToString() + 
-                    "Z : "+ poolingBlock.position.z.ToString();
-                Debug.Log(test);
-
-              
+                poolingBlock.isVisible = true; //isVisible을 해주어야 Active 여부 및 Position이 설정 여부를 알 수 있다. 
+                poolingBlock.transform.position = new Vector3(x,y,z); //pooling Box의 Position 결정
+                poolingBlock.position.x = x;
+                poolingBlock.position.z = z;
+                poolingBlock.position.y = y;
                 poolingBlock.TransWorldPosition();
-            
+
                 break;
             }
         }
-        //foreach (Block poolingBlock in poolingBlockList)
-        //{
-        //    if (poolingBlock.isVisible)
-        //    {
-        //        if(poolingBlock.position.x != x && poolingBlock.position.z != z)
-        //        {
-        //            poolingBlock.gameObject.SetActive(false);
-        //        }
-
-        //    }
-        //}
-
-
     }
-    public void RemoveVisibleBlock(Position clickPos, Position currentPos)
+    public void RemoveVisibleBlock(Vector2Int rectTopLeft, Vector2Int rectBottomRight)
     {
-        int xNum = currentPos.x - clickPos.x;
-        int zNum = currentPos.z - clickPos.z;
+        foreach (Block poolingBlock in poolingBlockList)
+        {
+            if (poolingBlock.isVisible)
+            {
+                if (poolingBlock.gameObject.activeSelf == true)
+                {
+                    if (poolingBlock.position.x < rectTopLeft.x || poolingBlock.position.x > rectBottomRight.x
+                         || poolingBlock.position.z < rectBottomRight.y || poolingBlock.position.z > rectTopLeft.y) //사각형 안에 들어오지 않는경우
+                    {
+                        //Debug.Log("erase" + "X: " + poolingBlock.position.x + "Z: " + poolingBlock.position.z);
+                        poolingBlock.gameObject.SetActive(false); // Active 꺼주기
+                        poolingBlock.isVisible = false; 
 
-        if (xNum >= 0)
-        {
-            if (zNum <= 0)
-            {
-                foreach (Block blocks in poolingBlockList)
-                {
-                    if (blocks.isVisible)
-                    {
-                        if (blocks.position.x > xNum || blocks.position.z < zNum)
-                            blocks.gameObject.SetActive(false);
-                    }
-                }
-            }
-            if (zNum >= 0)
-            {
-                foreach (Block blocks in poolingBlockList)
-                {
-                    if (blocks.isVisible)
-                    {
-                        if (blocks.position.x > xNum || blocks.position.z > zNum)
-                            blocks.gameObject.SetActive(false);
                     }
                 }
             }
         }
-        if (xNum <= 0)
+    }
+    public void BuildBlock()
+    {
+        foreach(Block poolingBlock in poolingBlockList)
         {
-            
-            if (zNum <= 0)
+            if (!poolingBlock.isVisible)
+                continue;
+            if (OverlapBlockBuild(poolingBlock))
+                continue;
+
+            if(poolingBlock.gameObject.activeSelf == true)
             {
-                foreach (Block blocks in poolingBlockList)
-                {
-                    if (blocks.isVisible)
-                    {
-                        if (blocks.position.x < xNum || blocks.position.z < zNum)
-                            blocks.gameObject.SetActive(false);
-                    }
-                }
-            }
-            if (zNum >= 0)
-            {
-                foreach (Block blocks in poolingBlockList)
-                {
-                    if (blocks.isVisible)
-                    {
-                        if (blocks.position.x < xNum || blocks.position.z > zNum)
-                            blocks.gameObject.SetActive(false);
-                    }
-                }
+                GameObject blockGo = Instantiate(addBlockList[Builder.Instance.blockSelectIndex], addTransform) as GameObject;
+                blockGo.transform.position = poolingBlock.transform.position; 
+                poolingBlock.gameObject.SetActive(false);
+                
+                if(blockGo.GetComponent<Block>() != null)
+                    work.addBlockList.Add(blockGo.GetComponent<Block>());
             }
         }
+    }
+    private bool OverlapBlockBuild(Block block)
+    {
+        foreach(Block addBlock in work.addBlockList)
+        {
+            if(addBlock.transform.position == block.transform.position)
+            {
+                return true;
+            }
+        }
+        return false;
     }
     public void AddBlock(int _blockSelect, int _layer, Vector3 _pos, Vector3 _normal, bool _isAnimation, bool isVisible)
     {
@@ -340,7 +301,7 @@ public class WorldGenerator : MonoBehaviour
             block.CreateAnimation();
         }
 
-        work.addBlockList.Add(blockGo);
+        //work.addBlockList.Add(blockGo);
     }
     public void LookBlockCreate(int blockType)
     {

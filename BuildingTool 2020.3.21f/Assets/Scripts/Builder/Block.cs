@@ -15,7 +15,7 @@ public class Block : MonoBehaviour
 
     private void Start()
     {
-        position = new Position();
+       // position = new Position();
     }
     private void Update()
     {
@@ -100,17 +100,14 @@ public class Block : MonoBehaviour
         if(PlayerManager.instance.isTranslateScale)
         {
             Vector3 currentMouseP = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y,
-                -Camera.main.transform.position.z));// Input.mousePosition;
+                -Camera.main.transform.position.z));
             float distance = Vector3.Distance(PlayerManager.instance.mouseOnClickPosition, currentMouseP);
-            //Debug.Log(currentMouseP);
+ 
             if(distance > 1.0)
             {
                 Vector3 addScale = new Vector3((float)2, (float)2, (float)2);
                 Vector3 transScale = Vector3.Scale(addScale, _normal);
                 Vector3 addDist = new Vector3(transform.localScale.x + distance, transform.localScale.y + distance, transform.localScale.z + distance);
-                //Vector3 gobScale = Vector3.Scale(transform.localP)
-                //Debug.Log("distance Over");
-                // Vector3 transScale = ne
                 transform.localScale = addDist;
             }
         }
@@ -122,45 +119,5 @@ public class Block : MonoBehaviour
     public void TransWorldPosition()
     {
         transform.position = Math.instance.TransWorldPosition(position);
-        ExceptZero(transform.position);
-    
     }
-    private void ExceptZero(Vector3 position)
-    {
-        float oneHalfTileSize = (float)(WorldGenerator.Instance.rowSize / (10 *2));
-        if (this.position.x == 0)
-        {
-            if(position.x < 0)
-            {
-                transform.position = new Vector3(transform.position.x - 0.5f, transform.position.y, transform.position.z);
-            }
-        }
-        if(this.position.z == 0)
-        {
-            if(position.z < 0)
-            {
-                transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z - 0.5f);
-            }
-        }
-    }
-    void OnMouseDown()
-    {
-        //Vector3 dragMosuePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        //string mosuePos = dragMosuePos.ToString();
-        //Debug.Log(mosuePos);
-    }
-    private void OnMouseDrag()
-    {
-        Vector3 dragMosuePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        string mosuePos = dragMosuePos.ToString();
-        //Debug.Log("Mouse Drag"+mosuePos);
-    }
-    private void OnMouseUp()
-    {
-        Vector3 dragMosuePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        string mosuePos = dragMosuePos.ToString();
-        //Debug.Log("MouseUp" + mosuePos);
-    }
-
-
 }
