@@ -17,15 +17,14 @@ public class Block : MonoBehaviour
     {
        // position = new Position();
     }
-    private void Update()
+    private void update()
     {
         if (isPrintUI)
         {
             CreatePointUI();
         }
-       
-
     }
+
     public void CreateAnimation()
     {
         StartCoroutine(CorCreatAnimation());

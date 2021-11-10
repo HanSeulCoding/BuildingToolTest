@@ -54,6 +54,7 @@ public class WorldGenerator : MonoBehaviour
     private Transform poolingBlockTransform;
 
     private List<Block> poolingBlockList = new List<Block>();
+    private List<Block> falsePoolingBlock = new List<Block>();
     private Work work;
 
     [HideInInspector]
@@ -98,12 +99,14 @@ public class WorldGenerator : MonoBehaviour
     //PreBlock 정보 설정
     public void VisibleAddBlock(int _blockSelect, Vector3 clickMousePos, Vector3 currentMousePos)
     {
+        Debug.Log(currentMousePos);
         Position clickPos = Math.instance.TransLocalPosition(clickMousePos);
         Position currentpos = Math.instance.TransLocalPosition(currentMousePos);
         if (currentpos.x > 50 || currentpos.x < -50
             || currentpos.z > 50 || currentpos.z < -50)
             return;
 
+        Debug.Log("current Pos X: " + currentpos.x + "Pos Y : " + currentpos.y + "Pos Z :" + currentpos.z);
         RectMake(clickPos, currentpos);
     }
     //MouseClickposition에서 현재 마우스포지션의 안의 사각형 정보 추출 
@@ -145,14 +148,14 @@ public class WorldGenerator : MonoBehaviour
            // rectTopRight = new Vector2Int(currentPos.x, clickPos.z);  
         }
 
-        Debug.Log(rectTopLeft);
-        Debug.Log(rectBottomRight);
+        //Debug.Log(rectTopLeft);
+        //Debug.Log(rectBottomRight);
 
         MakeVisibleBlock(rectTopLeft, rectBottomRight, currentPos.y);
-        RemoveVisibleBlock(rectTopLeft, rectBottomRight);
+        RemoveVisibleBlock(rectTopLeft, rectBottomRight, currentPos.y);
 
     }
-   //사각형 정보를 토대로 PreBlock 건설 
+    //사각형 정보를 토대로 PreBlock 건설 
     private void MakeVisibleBlock(Vector2Int rectTopLeft, Vector2Int rectBottomRight, int yLine)
     {
         if (rectTopLeft.y == rectBottomRight.y && rectTopLeft.x == rectBottomRight.x)
@@ -189,13 +192,14 @@ public class WorldGenerator : MonoBehaviour
             }
         }
     }
+
     public void SetVisiblePosition(int x, int y, int z)
     {
         foreach (Block poolingBlock in poolingBlockList)
         {
             if (poolingBlock.gameObject.activeSelf == true)
             {
-                if ( poolingBlock.position.x == x &&  poolingBlock.position.z == z && poolingBlock.position.y == y) //중복검사(같은 곳 block 생성 X)
+                if (poolingBlock.position.x == x && poolingBlock.position.z == z && poolingBlock.position.y == y) //중복검사(같은 곳 block 생성 X)
                     break;
             }
             if (poolingBlock.gameObject.activeSelf == false)
@@ -203,7 +207,7 @@ public class WorldGenerator : MonoBehaviour
                 poolingBlock.gameObject.SetActive(true);
 
                 poolingBlock.isVisible = true; //isVisible을 해주어야 Active 여부 및 Position이 설정 여부를 알 수 있다. 
-                poolingBlock.transform.position = new Vector3(x,y,z); //pooling Box의 Position 결정
+                poolingBlock.transform.position = new Vector3(x, y, z); //pooling Box의 Position 결정
                 poolingBlock.position.x = x;
                 poolingBlock.position.z = z;
                 poolingBlock.position.y = y;
@@ -213,7 +217,8 @@ public class WorldGenerator : MonoBehaviour
             }
         }
     }
-    public void RemoveVisibleBlock(Vector2Int rectTopLeft, Vector2Int rectBottomRight)
+   
+    public void RemoveVisibleBlock(Vector2Int rectTopLeft, Vector2Int rectBottomRight, int yLine)
     {
         foreach (Block poolingBlock in poolingBlockList)
         {
@@ -222,7 +227,9 @@ public class WorldGenerator : MonoBehaviour
                 if (poolingBlock.gameObject.activeSelf == true)
                 {
                     if (poolingBlock.position.x < rectTopLeft.x || poolingBlock.position.x > rectBottomRight.x
-                         || poolingBlock.position.z < rectBottomRight.y || poolingBlock.position.z > rectTopLeft.y) //사각형 안에 들어오지 않는경우
+                         || poolingBlock.position.z < rectBottomRight.y || poolingBlock.position.z > rectTopLeft.y
+                         || poolingBlock.position.y > yLine)
+                         //사각형 안에 들어오지 않는경우
                     {
                         //Debug.Log("erase" + "X: " + poolingBlock.position.x + "Z: " + poolingBlock.position.z);
                         poolingBlock.gameObject.SetActive(false); // Active 꺼주기
@@ -239,14 +246,15 @@ public class WorldGenerator : MonoBehaviour
         {
             if (!poolingBlock.isVisible)
                 continue;
-            if (OverlapBlockBuild(poolingBlock))
-                continue;
+            //if (OverlapBlockBuild(poolingBlock))
+             //   continue;
 
             if(poolingBlock.gameObject.activeSelf == true)
             {
                 GameObject blockGo = Instantiate(addBlockList[Builder.Instance.blockSelectIndex], addTransform) as GameObject;
                 blockGo.transform.position = poolingBlock.transform.position; 
                 poolingBlock.gameObject.SetActive(false);
+                poolingBlock.isVisible = false;
                 
                 if(blockGo.GetComponent<Block>() != null)
                     work.addBlockList.Add(blockGo.GetComponent<Block>());

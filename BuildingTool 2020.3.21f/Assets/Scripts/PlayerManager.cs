@@ -87,17 +87,18 @@ public class PlayerManager : MonoBehaviour
                 mouseOnClickPosition = hit.point;
             }
         }
-        if (Input.GetMouseButton(0) == true)
+        else if (Input.GetMouseButton(0) == true)
         {
             if (Physics.Raycast(mCameraHitRay, out hit) == true)
             {
-                currentMousePosition = hit.point;
+                currentMousePosition.x = hit.point.x;
+                currentMousePosition.z = hit.point.z;
                 switch (hit.transform.gameObject.layer)
                 {
                     case 7:
                         currentMousePosition.y = hit.transform.position.y + (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
                         break;
-                    default:
+                    case 6:
                         currentMousePosition.y = (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
                         break;
 
@@ -106,10 +107,10 @@ public class PlayerManager : MonoBehaviour
                 
                 currentPosition = Math.instance.TransLocalPosition(currentMousePosition);
 
-               // if (currentPosition.x != prevPosition.x || currentPosition.z != prevPosition.z)
-                WorldGenerator.Instance.VisibleAddBlock(Builder.Instance.blockSelectIndex, mouseOnClickPosition, currentMousePosition);
+                if (currentPosition.x != prevPosition.x || currentPosition.z != prevPosition.z || currentPosition.y != prevPosition.y)
+                    WorldGenerator.Instance.VisibleAddBlock(Builder.Instance.blockSelectIndex, mouseOnClickPosition, currentMousePosition);
 
-               // prevPosition = Math.instance.TransLocalPosition(currentMousePosition);
+                prevPosition = Math.instance.TransLocalPosition(currentMousePosition);
             }
         }
         if (Input.GetMouseButtonUp(0) == true)
