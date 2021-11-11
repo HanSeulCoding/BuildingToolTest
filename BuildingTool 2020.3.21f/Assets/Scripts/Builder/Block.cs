@@ -8,21 +8,31 @@ public class Block : MonoBehaviour
     public bool isPrintUI;
 
     [HideInInspector]
+    public int blockType = 0;
+
+    [HideInInspector]
+    public bool isUndo;
+
+    [HideInInspector]
     public bool isVisible = false;
     [HideInInspector]
     public Position position = new Position();
+    [HideInInspector]
+    public bool isDestroy;
     // Start is called before the first frame update
 
     private void Start()
     {
        // position = new Position();
     }
-    private void update()
+    private void Update()
     {
         if (isPrintUI)
         {
             CreatePointUI();
         }
+        if (isDestroy)
+            Destroy(this.gameObject);
     }
 
     public void CreateAnimation()
@@ -100,7 +110,7 @@ public class Block : MonoBehaviour
         {
             Vector3 currentMouseP = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y,
                 -Camera.main.transform.position.z));
-            float distance = Vector3.Distance(PlayerManager.instance.mouseOnClickPosition, currentMouseP);
+            float distance = Vector3.Distance(Builder.Instance.mouseOnClickPosition, currentMouseP);
  
             if(distance > 1.0)
             {

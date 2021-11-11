@@ -4,10 +4,12 @@ using UnityEngine;
 
 public class Work
 {
-    public List<int> removeBlockTypeList;
-    public List<Vector3> removeBlockPosList;
+    public Dictionary<int,List<int>> removeBlockTypeList = new Dictionary<int, List<int>>();
+    public Dictionary<int,List<Vector3>> removeBlockPosList = new Dictionary<int, List<Vector3>>();
 
-    public List<Block> addBlockList;
+    public Dictionary<int, List<Block>> removeBlock = new Dictionary<int, List<Block>>();
+    public List<Block> addBlockList = new List<Block>();
+     
 }
 public class WorldGenerator : MonoBehaviour
 {
@@ -54,15 +56,16 @@ public class WorldGenerator : MonoBehaviour
     private Transform poolingBlockTransform;
 
     private List<Block> poolingBlockList = new List<Block>();
-    private List<Block> falsePoolingBlock = new List<Block>();
-    private Work work;
+
+    [HideInInspector]
+    public Work work;
 
     [HideInInspector]
     public List<GameObject> addBlockList = new List<GameObject>();
     [HideInInspector]
     public bool isBuild;
     [HideInInspector]
-    public float visibleBlockY;
+    public int undoRedoKey = 0;
 
     private void Awake()
     {
@@ -90,14 +93,18 @@ public class WorldGenerator : MonoBehaviour
         }
 
         work = new Work();
-        work.addBlockList = new List<Block>();
-        work.removeBlockPosList = new List<Vector3>();
-        work.removeBlockTypeList = new List<int>();
+        for (int i = 0; i < 10; i++)
+        {
+            work.removeBlockPosList[i] = new List<Vector3>();
+            work.removeBlockTypeList[i] = new List<int>();
+            work.removeBlock[i] = new List<Block>();
+        }
+        undoRedoKey = 0;
     }
     // Start is called before the first frame update
 
     //PreBlock 정보 설정
-    public void VisibleAddBlock(int _blockSelect, Vector3 clickMousePos, Vector3 currentMousePos)
+    public void MousePosTranslate(int _blockSelect, Vector3 clickMousePos, Vector3 currentMousePos)
     {
         Debug.Log(currentMousePos);
         Position clickPos = Math.instance.TransLocalPosition(clickMousePos);
@@ -109,6 +116,7 @@ public class WorldGenerator : MonoBehaviour
         Debug.Log("current Pos X: " + currentpos.x + "Pos Y : " + currentpos.y + "Pos Z :" + currentpos.z);
         RectMake(clickPos, currentpos);
     }
+
     //MouseClickposition에서 현재 마우스포지션의 안의 사각형 정보 추출 
     private void RectMake(Position clickPos, Position currentPos)
     {
@@ -153,7 +161,6 @@ public class WorldGenerator : MonoBehaviour
 
         MakeVisibleBlock(rectTopLeft, rectBottomRight, currentPos.y);
         RemoveVisibleBlock(rectTopLeft, rectBottomRight, currentPos.y);
-
     }
     //사각형 정보를 토대로 PreBlock 건설 
     private void MakeVisibleBlock(Vector2Int rectTopLeft, Vector2Int rectBottomRight, int yLine)
@@ -178,7 +185,7 @@ public class WorldGenerator : MonoBehaviour
             for (int i = rectBottomRight.y; i < rectTopLeft.y; i++)
             {
                 for (int y = 0; y <= yLine; y++)
-                    SetVisiblePosition(rectTopLeft.x,y, i);
+                    SetVisiblePosition(rectTopLeft.x, y, i);
             }
             return;
         }
@@ -208,6 +215,7 @@ public class WorldGenerator : MonoBehaviour
 
                 poolingBlock.isVisible = true; //isVisible을 해주어야 Active 여부 및 Position이 설정 여부를 알 수 있다. 
                 poolingBlock.transform.position = new Vector3(x, y, z); //pooling Box의 Position 결정
+                poolingBlock.blockType = Builder.Instance.blockSelectIndex;
                 poolingBlock.position.x = x;
                 poolingBlock.position.z = z;
                 poolingBlock.position.y = y;
@@ -251,13 +259,141 @@ public class WorldGenerator : MonoBehaviour
 
             if(poolingBlock.gameObject.activeSelf == true)
             {
-                GameObject blockGo = Instantiate(addBlockList[Builder.Instance.blockSelectIndex], addTransform) as GameObject;
-                blockGo.transform.position = poolingBlock.transform.position; 
+                Block blockGo = AddBlock(Builder.Instance.blockSelectIndex, poolingBlock.transform.position);
+                
                 poolingBlock.gameObject.SetActive(false);
                 poolingBlock.isVisible = false;
-                
+
+
+                UndoInfoSave(blockGo);
+
                 if(blockGo.GetComponent<Block>() != null)
                     work.addBlockList.Add(blockGo.GetComponent<Block>());
+            }
+        }
+    }
+    
+    public void DeleteBlock()
+    {
+        //이진탐색으로 최적화 해야함
+       // int count = 0;
+        foreach (Block poolingBlock in poolingBlockList)
+        {
+            if (!poolingBlock.gameObject.activeSelf)
+                continue;
+
+            if (!poolingBlock.isVisible) //보이는 PoolingBlock 아닐 경우
+                continue;
+
+            if (poolingBlock.gameObject.activeSelf == true)
+            {
+                for(int i= work.addBlockList.Count -1; i>=0; i--)
+                {
+                    Block block = work.addBlockList[i];
+                    if (poolingBlock.transform.position == block.transform.position)
+                    {
+                        UndoInfoSave(block);
+                        //UndoInfoSave(poolingBlock.transform.position, block.blockType);
+                        
+                        work.addBlockList[i].isDestroy = true;
+                        work.addBlockList.Remove(work.addBlockList[i]);
+
+                        poolingBlock.gameObject.SetActive(false);
+                        poolingBlock.isVisible = false;
+
+                    }
+                    //count++;
+                }
+            }
+            
+        }
+    }
+    public void UndoInfoSave(Block block)
+    {
+        block.isUndo = true;
+        work.removeBlock[undoRedoKey].Add(block);
+        
+    }
+    public void UndoInfoSave(Vector3 position, int type)
+    {
+        //work.removeBlockPosList[undoRedoKey] = new List<Vector3>();
+        //work.removeBlockTypeList[undoRedoKey] = new List<int>();
+
+        work.removeBlockPosList[undoRedoKey].Add(position);
+        work.removeBlockTypeList[undoRedoKey].Add(type);
+    }
+    public void Undo()
+    {
+        //이진탐색으로
+        //최적화 해야한다.
+
+        //Debug.Log("undoRedoKey : " + undoRedoKey);
+        //foreach (Vector3 position in work.removeBlockPosList[undoRedoKey])
+        //{
+        //    //foreach(Block block in work.addBlockList)
+        //    for (int i = work.addBlockList.Count - 1; i >= 0; i--)
+        //    {
+        //        if (position == work.addBlockList[i].transform.position)
+        //        {
+        //            work.addBlockList[i].isDestroy = true;
+        //            work.addBlockList.Remove(work.addBlockList[i]);
+        //        }
+        //        //count++;
+        //    }
+        //}
+        if (work.removeBlock.Count != 0 )
+        {
+            foreach (Block block in work.removeBlock[undoRedoKey - 1])
+            {
+                for (int i = work.addBlockList.Count - 1; i >= 0; i--)
+                {
+                    if (work.addBlockList[i] == block)
+                    {
+                        work.addBlockList[i].isDestroy = true;
+                        work.addBlockList.Remove(work.addBlockList[i]);
+
+                    }
+                    //count++;
+                }
+
+            }
+        }
+        work.removeBlock[undoRedoKey - 1].Clear();
+        //undoRedoKey--;
+
+        //}
+    }
+    public void Redo()
+    {
+        List<int> typeList = work.removeBlockTypeList[undoRedoKey];
+        List<Vector3> posList = work.removeBlockPosList[undoRedoKey];
+        
+
+        for(int i=0;i <= posList.Count-1;i++)
+        {
+            AddBlock(typeList[i], posList[i]);
+        }
+    }
+    public Block AddBlock(int blockType, Vector3 pos)
+    {
+        GameObject blockGo = Instantiate(addBlockList[blockType], addTransform) as GameObject;
+        blockGo.transform.position = pos;
+        Block block = blockGo.GetComponent<Block>();
+        block.blockType = blockType;
+
+        return block;
+    }
+    public void VisibleBlockFalse()
+    {
+        foreach (Block poolingBlock in poolingBlockList)
+        {
+            if (!poolingBlock.gameObject.activeSelf)
+                continue;
+
+            if (poolingBlock.gameObject.activeSelf == true)
+            {
+                poolingBlock.isVisible = false;
+                poolingBlock.gameObject.SetActive(false);
             }
         }
     }

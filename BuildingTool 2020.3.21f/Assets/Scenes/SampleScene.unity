@@ -3283,6 +3283,8 @@ MonoBehaviour:
   camRotateSpeed: 1300
   camZommSpeed: 100
   camVerticalSpeed: 50
+  mouseOnClickPosition: {x: 0, y: 0, z: 0}
+  currentMousePosition: {x: 0, y: 0, z: 0}
   blockSelectIndex: 0
 --- !u!114 &1100198608
 MonoBehaviour:
@@ -3312,7 +3314,7 @@ MonoBehaviour:
   addBlock10: {fileID: 0}
   addBlockList: []
   isBuild: 0
-  visibleBlockY: 0
+  undoRedoKey: -1
 --- !u!1 &1108084498
 GameObject:
   m_ObjectHideFlags: 0
@@ -4366,9 +4368,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isTranslateScale: 0
-  mouseOnClickPosition: {x: 0, y: 0, z: 0}
   testPos: {x: 0, y: 0, z: 0}
-  currentMousePosition: {x: 0, y: 0, z: 0}
   _clickNormal: {x: 0, y: 0, z: 0}
   mCurrentMode: 0
   clickedBlock: {fileID: 0}
@@ -6430,7 +6430,7 @@ Light:
   m_Type: 1
   m_Shape: 0
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
-  m_Intensity: 0.99
+  m_Intensity: 0.87
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.802082
@@ -6439,7 +6439,7 @@ Light:
     m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
-    m_Strength: 1
+    m_Strength: 0.385
     m_Bias: 0.02
     m_NormalBias: 0.1
     m_NearPlane: 0.1
@@ -6479,7 +6479,7 @@ Light:
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
-  m_ShadowAngle: 0
+  m_ShadowAngle: 27.5
 --- !u!4 &2138677393
 Transform:
   m_ObjectHideFlags: 0

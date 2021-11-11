@@ -21,9 +21,15 @@ public class Builder : MonoBehaviour
     private Ray mCameraHitRay = new Ray();
 
     [HideInInspector]
+    public Vector3 mouseOnClickPosition;
+
+    [HideInInspector]
+    public Vector3 currentMousePosition;
+
+    [HideInInspector]
     public int blockSelectIndex = 0;
-     
-    
+
+    private Position prevPosition = new Position();
     private void InitSetting()
     {
    
@@ -41,28 +47,72 @@ public class Builder : MonoBehaviour
         blockSelectIndex = _index;
         RootCanvas.instance.SelectBlock(_index);
     }
-
-    public void AddBlock()
+    public void OnClick()
     {
-        mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-
         RaycastHit hit;
+        mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(mCameraHitRay, out hit) == true)
         {
-            if (hit.transform.gameObject.layer != 7 && hit.transform.gameObject.layer != 6)
-                return;
+            mouseOnClickPosition = hit.point;
+        }
+    }
 
+    public void AddVisibleBlock()
+    {
+        Position currentPosition;
+        RaycastHit hit;
+        mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(mCameraHitRay, out hit) == true)
+        {
+            currentMousePosition.x = hit.point.x;
+            currentMousePosition.z = hit.point.z;
+            switch (hit.transform.gameObject.layer)
+            { 
+                case 7:
+                    currentMousePosition.y = hit.transform.position.y + (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
+                    if(PlayerManager.instance.mCurrentMode == PlayerManager.Mode.Delete)
+                    {
+                        currentMousePosition.y = hit.transform.position.y;
+                    }
+                    break;
+                case 6:
+                    currentMousePosition.y = (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
+                    break;
+
+            }
+            currentPosition = Math.instance.TransLocalPosition(currentMousePosition);
+
+            if (currentPosition.x != prevPosition.x || currentPosition.z != prevPosition.z || currentPosition.y != prevPosition.y)
+                WorldGenerator.Instance.MousePosTranslate(blockSelectIndex, mouseOnClickPosition, currentMousePosition);
+
+            prevPosition = Math.instance.TransLocalPosition(currentMousePosition);
+        }
+        //RootCanvas.Instance.SetWorkFlow(WorldGenerator.Instance.kCurrentWorkList, WorldGenerator.Instance.kCurrentFillWorkCount, WorldGenerator.Instance.kCurrentWorkNextIndex - 1);
+
+    }
+    public void DeleteBlock()
+    {
+        Position currentPosition;
+        RaycastHit hit;
+        mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(mCameraHitRay, out hit) == true)
+        {
+            currentMousePosition.x = hit.point.x;
+            currentMousePosition.z = hit.point.z;
             switch (hit.transform.gameObject.layer)
             {
                 case 7:
-                    WorldGenerator.Instance.AddBlock(blockSelectIndex, hit.transform.gameObject.layer, hit.transform.position, hit.normal, true,false);
-                    break;
-                case 6:
-                    WorldGenerator.Instance.AddBlock(blockSelectIndex, hit.transform.gameObject.layer, hit.point, hit.normal, true,false);
+                    currentMousePosition.y = hit.transform.position.y + (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
                     break;
             }
 
-            //RootCanvas.Instance.SetWorkFlow(WorldGenerator.Instance.kCurrentWorkList, WorldGenerator.Instance.kCurrentFillWorkCount, WorldGenerator.Instance.kCurrentWorkNextIndex - 1);
+
+            currentPosition = Math.instance.TransLocalPosition(currentMousePosition);
+
+            if (currentPosition.x != prevPosition.x || currentPosition.z != prevPosition.z || currentPosition.y != prevPosition.y)
+                WorldGenerator.Instance.MousePosTranslate(blockSelectIndex, mouseOnClickPosition, currentMousePosition);
+
+            prevPosition = Math.instance.TransLocalPosition(currentMousePosition);
         }
     }
     Vector2 rotation = Vector2.zero;

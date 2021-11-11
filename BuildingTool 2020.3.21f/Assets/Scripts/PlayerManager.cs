@@ -16,13 +16,11 @@ public class PlayerManager : MonoBehaviour
     [HideInInspector]
     public bool isTranslateScale;
 
-    [HideInInspector]
-    public Vector3 mouseOnClickPosition;
+    
 
     public Vector3 testPos;
 
-    [HideInInspector]
-    public Vector3 currentMousePosition;
+    
 
     [HideInInspector]
     public Vector3 _clickNormal;
@@ -32,7 +30,7 @@ public class PlayerManager : MonoBehaviour
 
     [HideInInspector]
     public GameObject clickedBlock;
-    private Position prevPosition = new Position();
+
 
     private bool mIsLookAtMove;
 
@@ -50,6 +48,8 @@ public class PlayerManager : MonoBehaviour
             mCurrentMode = Mode.Insert;
         if (Input.GetKey(KeyCode.LeftControl) == true)
             mCurrentMode = Mode.BlockSelect;
+        if (Input.GetKeyDown(KeyCode.Delete) == true)
+            mCurrentMode = Mode.Delete;
         
         //if (Input.GetKeyDown(KeyCode.Delete) == true)
         //    mCurrentMode = Mode.Delete;
@@ -60,63 +60,68 @@ public class PlayerManager : MonoBehaviour
         
     }
 
-    //private Vector3 GetMousePos()
-    //{
-    //    Vector3 temp;
-    //    mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-    //    RaycastHit hit;
-    //    if (Physics.Raycast(mCameraHitRay, out hit) == true)
-    //    {
-    //        temp = hit.transform.position;
-    //    }
-    //    return temp;
-    //}
-
     private void BlockManageUpdate()
     {
-
-        Position currentPosition;
-        RaycastHit hit;
-        mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-
+        
         if (Input.GetMouseButtonDown(0) == true)
         {
-            if (Physics.Raycast(mCameraHitRay, out hit) == true)
+            if (WorldGenerator.Instance.undoRedoKey > 9)
             {
-                mouseOnClickPosition = hit.point;
+                WorldGenerator.Instance.undoRedoKey = 9;
+                if(WorldGenerator.Instance.work.removeBlock[0] != null)
+                    WorldGenerator.Instance.work.removeBlock[0].Clear();
+            }
+           
+
+            
+            Builder.Instance.OnClick();
+            switch (mCurrentMode)
+            {
+                case Mode.Insert:
+                    break;
+                case Mode.Delete:
+                    break;
             }
         }
-        else if (Input.GetMouseButton(0) == true)
+        if(Input.GetMouseButton(0) == true)
         {
-            if (Physics.Raycast(mCameraHitRay, out hit) == true)
-            {
-                currentMousePosition.x = hit.point.x;
-                currentMousePosition.z = hit.point.z;
-                switch (hit.transform.gameObject.layer)
-                {
-                    case 7:
-                        currentMousePosition.y = hit.transform.position.y + (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
-                        break;
-                    case 6:
-                        currentMousePosition.y = (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
-                        break;
-
-                }
-
-                
-                currentPosition = Math.instance.TransLocalPosition(currentMousePosition);
-
-                if (currentPosition.x != prevPosition.x || currentPosition.z != prevPosition.z || currentPosition.y != prevPosition.y)
-                    WorldGenerator.Instance.VisibleAddBlock(Builder.Instance.blockSelectIndex, mouseOnClickPosition, currentMousePosition);
-
-                prevPosition = Math.instance.TransLocalPosition(currentMousePosition);
-            }
+            Builder.Instance.AddVisibleBlock();
         }
         if (Input.GetMouseButtonUp(0) == true)
         {
-            WorldGenerator.Instance.BuildBlock();
+            switch (mCurrentMode)
+            {
+                case Mode.Insert:
+                    WorldGenerator.Instance.BuildBlock();
+                    break;
+                case Mode.Delete:
+                    WorldGenerator.Instance.DeleteBlock();
+                    WorldGenerator.Instance.VisibleBlockFalse();
+                    break;
+            }
+
+            if(WorldGenerator.Instance.undoRedoKey <= 9)
+                WorldGenerator.Instance.undoRedoKey++;
+            // WorldGenerator.Instance.undoRedoKey = 9
+
+
+            //  WorldGenerator.Instance.
+
         }
+        if(Input.GetKey(KeyCode.LeftArrow))
+        {
+            if(WorldGenerator.Instance.undoRedoKey >= 0)
+                WorldGenerator.Instance.Undo();
+        }
+        if (Input.GetKeyUp(KeyCode.LeftArrow))
+        {
+            if(WorldGenerator.Instance.undoRedoKey > 0)
+                 WorldGenerator.Instance.undoRedoKey--;
+        }
+        if (Input.GetKey(KeyCode.RightArrow))
+            WorldGenerator.Instance.Redo();
+        if(Input.GetKeyUp(KeyCode.RightArrow))
+            WorldGenerator.Instance.undoRedoKey++;
 
         //if (Input.GetMouseButtonDown(0) == true)
         //{
@@ -158,7 +163,7 @@ public class PlayerManager : MonoBehaviour
                 RootCanvas.instance.PrintMode("Scale Modify Mode");
 
                 if (Input.GetMouseButton(0) == true)
-                {
+                { 
                     Builder.Instance.BlockClick();
                 }
                 if (isTranslateScale) //Scale 변경 가능 시 
@@ -166,7 +171,7 @@ public class PlayerManager : MonoBehaviour
                     if (clickedBlock != null)
                     {
                         Block block = clickedBlock.GetComponent<Block>();
-                        block.TranslateScale(mouseOnClickPosition, _clickNormal); //Block Scale 변경
+                        block.TranslateScale(Builder.Instance.mouseOnClickPosition, _clickNormal); //Block Scale 변경
                     }
                 }
 
