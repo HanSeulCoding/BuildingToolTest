@@ -6,8 +6,9 @@ using UnityEngine.UI;
 public class RootCanvas : MonoBehaviour
 {
     public static RootCanvas instance;
-    [Header("ºôµå ºí·Ï ¸ñ·Ï")]
+    [Header("ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½")]
     public List<RectTransform> rectTransformList = new List<RectTransform>();
+    public Transform quitPanel;
     private Text modeText;
     
     // Start is called before the first frame update
@@ -19,6 +20,8 @@ public class RootCanvas : MonoBehaviour
     void Start()
     {
         modeText = GameObject.Find("ModeTxt").GetComponent<Text>();
+        quitPanel = transform.Find("QuitPanel").transform;
+
     }
 
     // Update is called once per frame

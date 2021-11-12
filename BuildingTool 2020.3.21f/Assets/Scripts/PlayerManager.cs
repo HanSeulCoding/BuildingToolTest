@@ -31,8 +31,7 @@ public class PlayerManager : MonoBehaviour
     [HideInInspector]
     public GameObject clickedBlock;
 
-
-    private bool mIsLookAtMove;
+    private bool isClick;
 
     private Ray mCameraHitRay = new Ray();
     private void Awake()
@@ -45,11 +44,17 @@ public class PlayerManager : MonoBehaviour
         //BuilderMoveUpdate();
 
         if (Input.GetKeyDown(KeyCode.Insert) == true)
+        {
+            RootCanvas.instance.PrintMode("Insert Mode");
             mCurrentMode = Mode.Insert;
+        }
         if (Input.GetKey(KeyCode.LeftControl) == true)
             mCurrentMode = Mode.BlockSelect;
         if (Input.GetKeyDown(KeyCode.Delete) == true)
+        {
             mCurrentMode = Mode.Delete;
+            RootCanvas.instance.PrintMode("Delete Mode");
+        }
         
         //if (Input.GetKeyDown(KeyCode.Delete) == true)
         //    mCurrentMode = Mode.Delete;
@@ -59,44 +64,66 @@ public class PlayerManager : MonoBehaviour
         BlockTypeSelect(); //블럭 타입 선택
         
     }
+    private bool IsDragDecide()
+    {
+        Position mouseOnClickPos = Math.instance.TransLocalPosition(Builder.Instance.mouseOnClickPosition);
+        Position currentMousePos = Math.instance.TransLocalPosition(Builder.Instance.currentMousePosition);
 
+        if (mouseOnClickPos.x == currentMousePos.x && mouseOnClickPos.y == currentMousePos.y
+            && mouseOnClickPos.z == currentMousePos.z)
+            return false;
+        Debug.Log("World MouseOnClickPos" + Builder.Instance.mouseOnClickPosition);
+        Debug.Log("World CurrentMousePos" + Builder.Instance.currentMousePosition);
+        Debug.Log("Local mouseOnclickPos X : " + mouseOnClickPos.x + "Y : " + mouseOnClickPos.y + "Z :" + mouseOnClickPos.z);
+        Debug.Log("Local currentMousePos X : " + currentMousePos.x + "Y : " + currentMousePos.y + "Z :" + currentMousePos.z);
+        return true;
+
+    }
     private void BlockManageUpdate()
     {
         
         if (Input.GetMouseButtonDown(0) == true)
         {
-            if (WorldGenerator.Instance.undoRedoKey > 9)
-            {
-                WorldGenerator.Instance.undoRedoKey = 9;
-                if(WorldGenerator.Instance.work.removeBlock[0] != null)
-                    WorldGenerator.Instance.work.removeBlock[0].Clear();
-            }
-           
-
-            
             Builder.Instance.OnClick();
             switch (mCurrentMode)
             {
                 case Mode.Insert:
+                    WorldGenerator.Instance.ClickBuildBlock();
                     break;
                 case Mode.Delete:
+                    WorldGenerator.Instance.ClickDeleteBlock();
                     break;
             }
+            Debug.Log("isClick true");
+           
         }
-        if(Input.GetMouseButton(0) == true)
+        else if(Input.GetMouseButton(0) == true)
         {
-            Builder.Instance.AddVisibleBlock();
+            RaycastHit hit = Builder.Instance.PressClick();
+            if (IsDragDecide())
+            {
+                Builder.Instance.AddVisibleBlock(hit);
+            }
         }
         if (Input.GetMouseButtonUp(0) == true)
         {
             switch (mCurrentMode)
             {
                 case Mode.Insert:
-                    WorldGenerator.Instance.BuildBlock();
+                    WorldGenerator.Instance.DragBuildBlock();
                     break;
+
                 case Mode.Delete:
-                    WorldGenerator.Instance.DeleteBlock();
-                    WorldGenerator.Instance.VisibleBlockFalse();
+                    if (IsDragDecide())
+                    {
+                        WorldGenerator.Instance.ClickDeleteBlock();
+                        Debug.Log("isClick execute");
+                    }
+                    else
+                    {
+                        WorldGenerator.Instance.DragDeleteBlock();
+                        WorldGenerator.Instance.VisibleBlockFalse();
+                    }
                     break;
             }
 
@@ -120,6 +147,7 @@ public class PlayerManager : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.RightArrow))
             WorldGenerator.Instance.Redo();
+
         if(Input.GetKeyUp(KeyCode.RightArrow))
             WorldGenerator.Instance.undoRedoKey++;
 
@@ -182,25 +210,11 @@ public class PlayerManager : MonoBehaviour
     public void BlockTypeSelect()
     {
         if (Input.GetKey(KeyCode.Alpha1) == true)
-            Builder.Instance.AddBlockTypeSelect(0);
-        if (Input.GetKey(KeyCode.Alpha2) == true)
             Builder.Instance.AddBlockTypeSelect(1);
-        if (Input.GetKey(KeyCode.Alpha3) == true)
+        if (Input.GetKey(KeyCode.Alpha2) == true)
             Builder.Instance.AddBlockTypeSelect(2);
-        if (Input.GetKey(KeyCode.Alpha4) == true)
+        if (Input.GetKey(KeyCode.Alpha3) == true)
             Builder.Instance.AddBlockTypeSelect(3);
-        if (Input.GetKey(KeyCode.Alpha5) == true)
-            Builder.Instance.AddBlockTypeSelect(4);
-        if (Input.GetKey(KeyCode.Alpha6) == true)
-            Builder.Instance.AddBlockTypeSelect(5);
-        if (Input.GetKey(KeyCode.Alpha7) == true)
-            Builder.Instance.AddBlockTypeSelect(6);
-        if (Input.GetKey(KeyCode.Alpha8) == true)
-            Builder.Instance.AddBlockTypeSelect(7);
-        if (Input.GetKey(KeyCode.Alpha9) == true)
-            Builder.Instance.AddBlockTypeSelect(8);
-        if (Input.GetKey(KeyCode.Alpha0) == true)
-            Builder.Instance.AddBlockTypeSelect(9);
     }
    
 }

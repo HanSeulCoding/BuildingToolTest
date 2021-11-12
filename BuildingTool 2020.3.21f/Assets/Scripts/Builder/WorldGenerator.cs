@@ -66,6 +66,10 @@ public class WorldGenerator : MonoBehaviour
     public bool isBuild;
     [HideInInspector]
     public int undoRedoKey = 0;
+    [HideInInspector]
+    private int buildCount;
+    [HideInInspector]
+    public List<Material> materials;
 
     private void Awake()
     {
@@ -80,13 +84,14 @@ public class WorldGenerator : MonoBehaviour
         bottomFloor.transform.localScale = new Vector3(rowSize, 1, columnSize);
 
         poolingBlock = Resources.Load<GameObject>("Blocks/PoolingBlock"); //pooling block 만들기
+        poolingBlock.GetComponent<Block>().isPooling = true;
         poolingBlock.SetActive(false);
         poolingBlockTransform = GameObject.Find("PoolingBlock").transform;
 
         poolingBlock.gameObject.transform.position = new Vector3(0, 0, 0);
-        for (int i=0;i<100;i++) //PoolingBlock Instantiate 
+        for (int i = 0; i < 100; i++) //PoolingBlock Instantiate 
         {
-            for(int j =0;j<100;j++)
+            for (int j = 0; j < 100; j++)
             {
                 poolingBlockList.Add(Instantiate(poolingBlock, poolingBlockTransform).GetComponent<Block>());
             }
@@ -100,9 +105,16 @@ public class WorldGenerator : MonoBehaviour
             work.removeBlock[i] = new List<Block>();
         }
         undoRedoKey = 0;
+        SetMaterials();
     }
     // Start is called before the first frame update
-
+    private void SetMaterials()
+    {
+        for(int i=1;i<4;i++)
+        {
+            materials.Add(Resources.Load<Material>("Blocks/BlockMaterial/Block" + i + "Mat"));
+        }
+    }
     //PreBlock 정보 설정
     public void MousePosTranslate(int _blockSelect, Vector3 clickMousePos, Vector3 currentMousePos)
     {
@@ -125,35 +137,35 @@ public class WorldGenerator : MonoBehaviour
 
         Vector2Int rectTopLeft = new Vector2Int();
         Vector2Int rectBottomRight = new Vector2Int();
- 
+
 
         if (xWidth <= 0 && zHeight <= 0) //오른쪽 위쪽에서 왼쪽 아래쪽으로 드래그
         {
-          //  rectBottomLeft = new Vector2Int(currentPos.x, currentPos.z);
+            //  rectBottomLeft = new Vector2Int(currentPos.x, currentPos.z);
             rectTopLeft = new Vector2Int((int)currentPos.x, (int)clickPos.z);
             rectBottomRight = new Vector2Int(clickPos.x, currentPos.z);
-           // rectTopRight = new Vector2Int(clickPos.x, clickPos.z);
+            // rectTopRight = new Vector2Int(clickPos.x, clickPos.z);
         }
-        else if( xWidth <= 0 && zHeight >= 0) // 오른쪽 아래쪽에서 왼쪽 위쪽으로 드래그
+        else if (xWidth <= 0 && zHeight >= 0) // 오른쪽 아래쪽에서 왼쪽 위쪽으로 드래그
         {
-           // rectBottomLeft = new Vector2Int(currentPos.x, clickPos.z);
-            rectTopLeft = new Vector2Int(currentPos.x, currentPos.z); 
+            // rectBottomLeft = new Vector2Int(currentPos.x, clickPos.z);
+            rectTopLeft = new Vector2Int(currentPos.x, currentPos.z);
             rectBottomRight = new Vector2Int(clickPos.x, clickPos.z);
-           // rectTopRight = new Vector2Int(clickPos.x, currentPos.z); 
+            // rectTopRight = new Vector2Int(clickPos.x, currentPos.z); 
         }
-        else if( xWidth >= 0 && zHeight >= 0) // 왼쪽 위쪽에서 오른쪽 아래쪽으로 드래그
+        else if (xWidth >= 0 && zHeight >= 0) // 왼쪽 위쪽에서 오른쪽 아래쪽으로 드래그
         {
             //rectBottomLeft = new Vector2Int(clickPos.x, clickPos.z); 
-            rectTopLeft = new Vector2Int(clickPos.x, currentPos.z);  
-            rectBottomRight = new Vector2Int(currentPos.x, clickPos.z); 
-          //  rectTopRight = new Vector2Int(currentPos.x, currentPos.z);  
+            rectTopLeft = new Vector2Int(clickPos.x, currentPos.z);
+            rectBottomRight = new Vector2Int(currentPos.x, clickPos.z);
+            //  rectTopRight = new Vector2Int(currentPos.x, currentPos.z);  
         }
         else if (xWidth >= 0 && zHeight <= 0) //왼쪽 아래쪽에서 오른쪽 위쪽으로 드래그
         {
-           // rectBottomLeft = new Vector2Int(clickPos.x, currentPos.z); 
-            rectTopLeft = new Vector2Int(clickPos.x, clickPos.z); 
+            // rectBottomLeft = new Vector2Int(clickPos.x, currentPos.z); 
+            rectTopLeft = new Vector2Int(clickPos.x, clickPos.z);
             rectBottomRight = new Vector2Int(currentPos.x, currentPos.z);
-           // rectTopRight = new Vector2Int(currentPos.x, clickPos.z);  
+            // rectTopRight = new Vector2Int(currentPos.x, clickPos.z);  
         }
 
         //Debug.Log(rectTopLeft);
@@ -189,7 +201,7 @@ public class WorldGenerator : MonoBehaviour
             }
             return;
         }
-        
+
         for (int i = rectTopLeft.x; i <= rectBottomRight.x; i++) //그 외 일반 사각형 건설
         {
             for (int z = rectBottomRight.y; z <= rectTopLeft.y; z++)
@@ -225,7 +237,7 @@ public class WorldGenerator : MonoBehaviour
             }
         }
     }
-   
+
     public void RemoveVisibleBlock(Vector2Int rectTopLeft, Vector2Int rectBottomRight, int yLine)
     {
         foreach (Block poolingBlock in poolingBlockList)
@@ -237,46 +249,54 @@ public class WorldGenerator : MonoBehaviour
                     if (poolingBlock.position.x < rectTopLeft.x || poolingBlock.position.x > rectBottomRight.x
                          || poolingBlock.position.z < rectBottomRight.y || poolingBlock.position.z > rectTopLeft.y
                          || poolingBlock.position.y > yLine)
-                         //사각형 안에 들어오지 않는경우
+                    //사각형 안에 들어오지 않는경우
                     {
                         //Debug.Log("erase" + "X: " + poolingBlock.position.x + "Z: " + poolingBlock.position.z);
                         poolingBlock.gameObject.SetActive(false); // Active 꺼주기
-                        poolingBlock.isVisible = false; 
+                        poolingBlock.isVisible = false;
 
                     }
                 }
             }
         }
     }
-    public void BuildBlock()
+    public void ClickBuildBlock()
     {
-        foreach(Block poolingBlock in poolingBlockList)
+        Block blockGo = AddBlock(Builder.Instance.blockSelectIndex, poolingBlock.transform.position);
+        
+        blockGo.transform.position = Math.instance.TranslatePosition(Builder.Instance.mouseOnClickPosition);
+    }
+    public void DragBuildBlock()
+    {
+        foreach (Block poolingBlock in poolingBlockList)
         {
             if (!poolingBlock.isVisible)
                 continue;
             //if (OverlapBlockBuild(poolingBlock))
-             //   continue;
+            //   continue;
 
-            if(poolingBlock.gameObject.activeSelf == true)
+            if (poolingBlock.gameObject.activeSelf == true)
             {
                 Block blockGo = AddBlock(Builder.Instance.blockSelectIndex, poolingBlock.transform.position);
-                
+
                 poolingBlock.gameObject.SetActive(false);
                 poolingBlock.isVisible = false;
 
 
-                UndoInfoSave(blockGo);
+               // UndoInfoSave(blockGo);
 
-                if(blockGo.GetComponent<Block>() != null)
+                if (blockGo.GetComponent<Block>() != null)
                     work.addBlockList.Add(blockGo.GetComponent<Block>());
             }
         }
+        UndoPush(buildCount);
+        buildCount++;
     }
-    
-    public void DeleteBlock()
+
+    public void DragDeleteBlock()
     {
         //이진탐색으로 최적화 해야함
-       // int count = 0;
+        // int count = 0;
         foreach (Block poolingBlock in poolingBlockList)
         {
             if (!poolingBlock.gameObject.activeSelf)
@@ -287,14 +307,14 @@ public class WorldGenerator : MonoBehaviour
 
             if (poolingBlock.gameObject.activeSelf == true)
             {
-                for(int i= work.addBlockList.Count -1; i>=0; i--)
+                for (int i = work.addBlockList.Count - 1; i >= 0; i--)
                 {
                     Block block = work.addBlockList[i];
                     if (poolingBlock.transform.position == block.transform.position)
                     {
-                        UndoInfoSave(block);
+                       // UndoInfoSave(block);
                         //UndoInfoSave(poolingBlock.transform.position, block.blockType);
-                        
+
                         work.addBlockList[i].isDestroy = true;
                         work.addBlockList.Remove(work.addBlockList[i]);
 
@@ -305,14 +325,43 @@ public class WorldGenerator : MonoBehaviour
                     //count++;
                 }
             }
-            
+        }
+    }
+    public void ClickDeleteBlock()
+    {
+        for (int i = work.addBlockList.Count - 1; i >= 0; i--)
+        {
+            Block block = work.addBlockList[i];
+            if (block.transform.position == Builder.Instance.mouseOnClickPosition)
+            {
+                work.addBlockList[i].isDestroy = true;
+                work.addBlockList.Remove(work.addBlockList[i]);
+            }
         }
     }
     public void UndoInfoSave(Block block)
     {
-        block.isUndo = true;
+        //block.isUndo = true;
         work.removeBlock[undoRedoKey].Add(block);
-        
+
+    }
+    public void UndoPop()
+    {
+
+    }
+    public void UndoPush(int index)
+    {
+        if (index <= 9)
+        {
+            undoRedoKey = index;
+        }
+        if(index > 9)
+        {
+            for(int i = 9; i < 0; i--)
+            {
+                work.removeBlock[i - 1] = work.removeBlock[i];
+            }
+        }
     }
     public void UndoInfoSave(Vector3 position, int type)
     {
@@ -376,7 +425,9 @@ public class WorldGenerator : MonoBehaviour
     }
     public Block AddBlock(int blockType, Vector3 pos)
     {
-        GameObject blockGo = Instantiate(addBlockList[blockType], addTransform) as GameObject;
+        if (blockType > 3)
+            blockType = 3;
+        GameObject blockGo = Instantiate(addBlockList[blockType-1], addTransform) as GameObject;
         blockGo.transform.position = pos;
         Block block = blockGo.GetComponent<Block>();
         block.blockType = blockType;

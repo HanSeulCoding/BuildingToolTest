@@ -19,11 +19,35 @@ public class Block : MonoBehaviour
     public Position position = new Position();
     [HideInInspector]
     public bool isDestroy;
+
+    [HideInInspector]
+    public bool isPooling;
+
+   
     // Start is called before the first frame update
 
     private void Start()
     {
-       // position = new Position();
+        if (!isPooling)
+        {
+            Material []mesh = this.GetComponent<MeshRenderer>().materials;
+            switch (blockType)
+            {
+                case 1:
+                    mesh[0] = WorldGenerator.Instance.materials[0];
+                    this.GetComponent<MeshRenderer>().materials = mesh;
+                    break;
+                case 2:
+                    mesh[0] = WorldGenerator.Instance.materials[1];
+                    this.GetComponent<MeshRenderer>().materials = mesh;
+                    break;
+                case 3:
+                    mesh[0] = WorldGenerator.Instance.materials[2];
+                    this.GetComponent<MeshRenderer>().materials = mesh;
+                    break;
+            }
+        }
+        position = new Position();
     }
     private void Update()
     {

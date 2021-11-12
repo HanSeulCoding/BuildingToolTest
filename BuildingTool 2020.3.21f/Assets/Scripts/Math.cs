@@ -53,6 +53,12 @@ public class Math : MonoBehaviour
         worldPosition = new Vector3((float)position.x + tempX, (float)(position.y + tempY), (float)(position.z + tempZ));
         return worldPosition;
     }
+    public Vector3 TranslatePosition(Vector3 position)
+    {
+        Position localPos = TransLocalPosition(position);
+        Vector3 transPosition = TransWorldPosition(localPos);
+        return transPosition;
+    }
    
 
 }
