@@ -15,4 +15,10 @@ public class ConstructBtnDialog : MonoBehaviour
         blockInfoBtn.SetActive(false);
         
     }
+    public void ConstructBtnFalse()
+    {
+        transform.Find("BlockInfoPanel").gameObject.SetActive(false);
+        blockInfoBtn.SetActive(true);
+    }
+
 }

@@ -100,6 +100,7 @@ MonoBehaviour:
   isUndo: 0
   isVisible: 0
   isDestroy: 0
+  isPooling: 1
 --- !u!65 &6127937182403985606
 BoxCollider:
   m_ObjectHideFlags: 0

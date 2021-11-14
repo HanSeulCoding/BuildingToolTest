@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 
 public class PlayerManager : MonoBehaviour
@@ -16,11 +17,8 @@ public class PlayerManager : MonoBehaviour
     [HideInInspector]
     public bool isTranslateScale;
 
-    
-
+    [HideInInspector]
     public Vector3 testPos;
-
-    
 
     [HideInInspector]
     public Vector3 _clickNormal;
@@ -31,17 +29,22 @@ public class PlayerManager : MonoBehaviour
     [HideInInspector]
     public GameObject clickedBlock;
 
-    private bool isClick;
+    [HideInInspector]
+    public bool isPress;
+
+    private float isPressTime;
+    
 
     private Ray mCameraHitRay = new Ray();
+
+  
     private void Awake()
     {
         instance = this;
     }
   
     private void Update()
-    {
-        //BuilderMoveUpdate();
+    { 
 
         if (Input.GetKeyDown(KeyCode.Insert) == true)
         {
@@ -66,8 +69,10 @@ public class PlayerManager : MonoBehaviour
     }
     private bool IsDragDecide()
     {
-        Position mouseOnClickPos = Math.instance.TransLocalPosition(Builder.Instance.mouseOnClickPosition);
-        Position currentMousePos = Math.instance.TransLocalPosition(Builder.Instance.currentMousePosition);
+        Position mouseOnClickPos = TransPosition.instance.TransLocalPosition(Builder.Instance.mouseOnClickPosition);
+        Position currentMousePos = TransPosition.instance.TransLocalPosition(Builder.Instance.currentMousePosition);
+       // Builder.Instance.blockY += 0.5f;
+
 
         if (mouseOnClickPos.x == currentMousePos.x && mouseOnClickPos.y == currentMousePos.y
             && mouseOnClickPos.z == currentMousePos.z)
@@ -79,61 +84,77 @@ public class PlayerManager : MonoBehaviour
         return true;
 
     }
+    //public bool IsPress()
+    //{
+    //    isPressTime += Time.deltaTime;
+    //    if (isPressTime > 0.7)
+    //    {
+    //        isPressTime = 0.0f;
+    //        return true;
+            
+          
+    //    }
+
+    //    return false;
+     
+    //}
+   
     private void BlockManageUpdate()
     {
-        
-        if (Input.GetMouseButtonDown(0) == true)
+        if (!EventSystem.current.IsPointerOverGameObject())
         {
-            Builder.Instance.OnClick();
-            switch (mCurrentMode)
+            if (Input.GetMouseButtonDown(0) == true) //클릭 건물 건설 및 삭제
             {
-                case Mode.Insert:
-                    WorldGenerator.Instance.ClickBuildBlock();
-                    break;
-                case Mode.Delete:
-                    WorldGenerator.Instance.ClickDeleteBlock();
-                    break;
+                switch (mCurrentMode)
+                {
+                    case Mode.Insert:
+                        Builder.Instance.BuildAndDelClick(true);
+                        break;
+                    case Mode.Delete:
+                        Builder.Instance.BuildAndDelClick(false);
+                        break;
+                }
+
             }
-            Debug.Log("isClick true");
-           
-        }
-        else if(Input.GetMouseButton(0) == true)
-        {
-            RaycastHit hit = Builder.Instance.PressClick();
-            if (IsDragDecide())
+            if (Input.GetMouseButton(0) == true) //Drag 시 작동
             {
-                Builder.Instance.AddVisibleBlock(hit);
+                isPressTime += Time.deltaTime;
+
+                if (isPressTime > 0.15)
+                    isPress = true;
+                else
+                    isPress = false;
+                Builder.Instance.PressClick();
+
+                //if (isPress)
+                //{ 
+                //    Builder.Instance.AddVisibleBlock(hit);
+                //}
             }
-        }
-        if (Input.GetMouseButtonUp(0) == true)
-        {
-            switch (mCurrentMode)
+            if (Input.GetMouseButtonUp(0) == true) //건물 건설 및 삭제 
             {
-                case Mode.Insert:
-                    WorldGenerator.Instance.DragBuildBlock();
-                    break;
+                isPressTime = 0.0f;
 
-                case Mode.Delete:
-                    if (IsDragDecide())
-                    {
-                        WorldGenerator.Instance.ClickDeleteBlock();
-                        Debug.Log("isClick execute");
-                    }
-                    else
-                    {
-                        WorldGenerator.Instance.DragDeleteBlock();
-                        WorldGenerator.Instance.VisibleBlockFalse();
-                    }
-                    break;
+                switch (mCurrentMode)
+                {
+                    case Mode.Insert:
+                        WorldGenerator.Instance.DragBuildBlock();
+                        break;
+
+                    case Mode.Delete:
+                        if (isPress)
+                        {
+                            Debug.Log("Del IsPress");
+                            WorldGenerator.Instance.DragDeleteBlock();
+                            WorldGenerator.Instance.VisibleBlockFalse();
+                        }
+                        break;
+                }
+                isPress = false;
+
+                if (WorldGenerator.Instance.undoRedoKey <= 9)
+                    WorldGenerator.Instance.undoRedoKey++;
             }
-
-            if(WorldGenerator.Instance.undoRedoKey <= 9)
-                WorldGenerator.Instance.undoRedoKey++;
-            // WorldGenerator.Instance.undoRedoKey = 9
-
-
-            //  WorldGenerator.Instance.
-
         }
         if(Input.GetKey(KeyCode.LeftArrow))
         {
@@ -150,30 +171,6 @@ public class PlayerManager : MonoBehaviour
 
         if(Input.GetKeyUp(KeyCode.RightArrow))
             WorldGenerator.Instance.undoRedoKey++;
-
-        //if (Input.GetMouseButtonDown(0) == true)
-        //{
-        //    switch (mCurrentMode)
-        //    {
-        //        //case Mode.Delete:
-        //        //    {
-        //        //        Builder.Instance.RemoveBlock();
-        //        //    }
-        //        //    break;
-        //        case Mode.Insert:
-        //            {
-
-        //                Builder.Instance.AddBlock();
-
-        //            }
-        //            break;
-        //    }
-
-        //}
-        //if(Input.GetMouseButton(0) == true)
-        //{
-
-        //}
 
         if (mCurrentMode == Mode.Insert)
             {
@@ -202,19 +199,16 @@ public class PlayerManager : MonoBehaviour
                         block.TranslateScale(Builder.Instance.mouseOnClickPosition, _clickNormal); //Block Scale 변경
                     }
                 }
-
             }
        }
-    
-    
     public void BlockTypeSelect()
     {
         if (Input.GetKey(KeyCode.Alpha1) == true)
-            Builder.Instance.AddBlockTypeSelect(1);
+            Builder.Instance.AddBlockTypeSelect(0);
         if (Input.GetKey(KeyCode.Alpha2) == true)
-            Builder.Instance.AddBlockTypeSelect(2);
+            Builder.Instance.AddBlockTypeSelect(1);
         if (Input.GetKey(KeyCode.Alpha3) == true)
-            Builder.Instance.AddBlockTypeSelect(3);
+            Builder.Instance.AddBlockTypeSelect(2);
     }
    
 }

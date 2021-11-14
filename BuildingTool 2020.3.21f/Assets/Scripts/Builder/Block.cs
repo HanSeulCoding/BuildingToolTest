@@ -33,16 +33,39 @@ public class Block : MonoBehaviour
             Material []mesh = this.GetComponent<MeshRenderer>().materials;
             switch (blockType)
             {
+                case 0:
+                    mesh[0] = GameManager.instance.materials[0];
+                    if (mesh[0] == null)
+                    {
+                        RootCanvas.instance.transform.Find("NotBlockType").gameObject.SetActive(true);
+                        WorldGenerator.Instance.work.addBlockList.Remove(this);
+                        Destroy(this.gameObject);
+                        return;
+                    }
+                    //
+                    this.GetComponent<MeshRenderer>().materials = mesh; //null ï¿½ï¿½ï¿½ï¿½ ï¿½Ç´ï¿½
+                    break;
                 case 1:
-                    mesh[0] = WorldGenerator.Instance.materials[0];
+                    mesh[0] = GameManager.instance.materials[1];
+                    if (mesh[0] == null)
+                    {
+                        RootCanvas.instance.transform.Find("NotBlockType").gameObject.SetActive(true);
+                        WorldGenerator.Instance.work.addBlockList.Remove(this);
+                        Destroy(this.gameObject);
+                        return;
+                    }
+
                     this.GetComponent<MeshRenderer>().materials = mesh;
                     break;
                 case 2:
-                    mesh[0] = WorldGenerator.Instance.materials[1];
-                    this.GetComponent<MeshRenderer>().materials = mesh;
-                    break;
-                case 3:
-                    mesh[0] = WorldGenerator.Instance.materials[2];
+                    mesh[0] = GameManager.instance.materials[2];
+                    if (mesh[0] == null)
+                    {
+                        RootCanvas.instance.transform.Find("NotBlockType").gameObject.SetActive(true);
+                        WorldGenerator.Instance.work.addBlockList.Remove(this);
+                        Destroy(this.gameObject);
+                        return;
+                    }
                     this.GetComponent<MeshRenderer>().materials = mesh;
                     break;
             }
@@ -78,7 +101,7 @@ public class Block : MonoBehaviour
         }
     }
 
-    public void CreatePointUI() //block Å¬¸¯ ÈÄ 8°³ÀÇ Point UI »ý¼º 
+    public void CreatePointUI() //block Å¬ï¿½ï¿½ ï¿½ï¿½ 8ï¿½ï¿½ï¿½ï¿½ Point UI ï¿½ï¿½ï¿½ï¿½ 
     {
         List<Vector3> blocksPos = new List<Vector3>();
         Vector3 temp = new Vector3(transform.localScale.x/2.0f, transform.localScale.y/2.0f,transform.localScale.z/2.0f);
@@ -147,10 +170,10 @@ public class Block : MonoBehaviour
     }
     public void TranslatePosition()
     {
-        position = Math.instance.TransLocalPosition(transform.position);
+        position = TransPosition.instance.TransLocalPosition(transform.position);
     }
     public void TransWorldPosition()
     {
-        transform.position = Math.instance.TransWorldPosition(position);
+        transform.position = TransPosition.instance.TransWorldPosition(position);
     }
 }

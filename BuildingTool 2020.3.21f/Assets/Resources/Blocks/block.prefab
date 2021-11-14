@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2171249455879335423}
   - component: {fileID: 166393997825182458}
   m_Layer: 7
-  m_Name: Block
+  m_Name: block
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -96,7 +96,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isPrintUI: 0
+  blockType: 0
+  isUndo: 0
   isVisible: 0
+  isDestroy: 0
+  isPooling: 0
 --- !u!65 &166393997825182458
 BoxCollider:
   m_ObjectHideFlags: 0

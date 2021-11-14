@@ -17,19 +17,21 @@ public class Builder : MonoBehaviour
     [Header("Vertical Speed")]
     public float camVerticalSpeed = 5f;
 
+    private int prevIndex;
     private Block prevBlock;
     private Ray mCameraHitRay = new Ray();
 
     [HideInInspector]
     public Vector3 mouseOnClickPosition;
 
+    //[HideInInspector]
+    //public Vector3 currentMousePosition;
     [HideInInspector]
-    public Vector3 currentMousePosition;
-
-    [HideInInspector]
-    public int blockSelectIndex = 1;
+    public Vector3 currentMousePosition = new Vector3();
 
     private Position prevPosition = new Position();
+    private Transform blockTransform;
+    private RaycastHit blockHit;
     private void InitSetting()
     {
    
@@ -38,81 +40,115 @@ public class Builder : MonoBehaviour
     {
         Instance = this;
         InitSetting();
-        blockSelectIndex = 1;
-
-       
     }
 
     public void AddBlockTypeSelect(int _index)
     {
-        blockSelectIndex = _index;
-        //RootCanvas.instance.SelectBlock(_index);
+       
+        GameManager.instance.selectBlockNum = _index;
+        //if(GameManager.instance.materials[_index])
+        //RootCanvas.instance.transform.Find("NotBlockType").gameObject.SetActive(true);
+        PrintSelectImg(_index,prevIndex);
+        prevIndex = _index;
+
     }
-    public void OnClick()
+    private void PrintSelectImg(int index,int prevIndex)
     {
+        if (GameManager.instance.materials[index] != null)
+        {
+            Inventory.instance.transform.GetChild(index).GetChild(1).gameObject.SetActive(true);
+        }
+        if(index != prevIndex)
+            Inventory.instance.transform.GetChild(prevIndex).GetChild(1).gameObject.SetActive(false);
+
+    }
+    public void BuildAndDelClick(bool isBuild)
+    {
+        Vector3 _normal = new Vector3();
         RaycastHit hit;
+        bool isBoxClick = false;
+      
         mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(mCameraHitRay, out hit) == true)
         {
             mouseOnClickPosition = hit.point;
+            
             Debug.Log("mouseOnClickPos" + mouseOnClickPosition);
-            //switch (hit.transform.gameObject.layer)
-            //{
-            //    case 7:
-            //        mouseOnClickPosition.y = hit.transform.position.y + (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
-            //        if (PlayerManager.instance.mCurrentMode == PlayerManager.Mode.Delete)
-            //        {
-            //            mouseOnClickPosition.y = hit.transform.position.y;
-            //        }
-            //        break;
-            //    case 6:
-            //        mouseOnClickPosition.y = (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
-            //        break;
-
-            //}
+            if (hit.transform.gameObject.layer == 7)
+                _normal = hit.normal;
         }
+        if(isBuild)
+          WorldGenerator.Instance.ClickBuildBlock(_normal);
+        if (!isBuild)
+            WorldGenerator.Instance.ClickDeleteBlock();
     }
-
     public RaycastHit PressClick()
     {
         RaycastHit hit;
+
+       
         mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        int layerMask = 1 << 7;
+
+        if (Physics.Raycast(mCameraHitRay, out hit, Mathf.Infinity,layerMask) == true) //block이랑 pooling block 이랑 겹칠 시 예외처리 해줘야함 
+        {
+            currentMousePosition.x = hit.point.x;
+            currentMousePosition.z = hit.point.z;
+            if (PlayerManager.instance.isPress)
+            {
+                Debug.Log("block click");
+                AddVisibleBlock(hit);
+                
+            }
+            blockTransform = hit.transform;
+            return hit;
+        }
+
+
         if (Physics.Raycast(mCameraHitRay, out hit) == true)
         {
             currentMousePosition.x = hit.point.x;
-            currentMousePosition.y = hit.point.y;
             currentMousePosition.z = hit.point.z;
+            if (PlayerManager.instance.isPress)
+            {
+                AddVisibleBlock(hit);
+            }
         }
         return hit;
     }
-    public void AddVisibleBlock(RaycastHit hit)
+    public void AddVisibleBlock(RaycastHit hit) //보이는 블럭 설치 Drag 시 사용 
     {
+        bool isBlockClick = false;
         Position currentPosition;
-
+      
         switch (hit.transform.gameObject.layer)
         { 
             case 7:
-                currentMousePosition.y = currentMousePosition.y + (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
-                //hit.transform.position.y + (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
+                isBlockClick = true;
+                currentMousePosition.y = hit.transform.position.y + (WorldGenerator.Instance.YSize / 10.0f / 2.0f);//설치된 블록 클릭 시,
                 if (PlayerManager.instance.mCurrentMode == PlayerManager.Mode.Delete)
                 {
                     currentMousePosition.y = hit.transform.position.y;
-                    Debug.Log("True");
                 }
                 break;
-            case 6:
-                currentMousePosition.y = (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
-                break;
-            case 8:
-                break;
+     
+                case 6:
+                  currentMousePosition.y = (WorldGenerator.Instance.YSize / 10.0f / 2.0f); //pooling block 클릭 시.
+                    break;
 
+                case 8:
+                     currentMousePosition.y = (WorldGenerator.Instance.YSize / 10.0f / 2.0f);
+                     break;
+            default:
+                return;
         }
-        currentPosition = Math.instance.TransLocalPosition(currentMousePosition);
+        currentPosition = TransPosition.instance.TransLocalPosition(currentMousePosition);
+        //Debug.Log("currentPos X :" + currentPosition.x + "Y : " + currentPosition.y + "Z :" + currentPosition.z);
 
         if (currentPosition.x != prevPosition.x || currentPosition.z != prevPosition.z || currentPosition.y != prevPosition.y)
-            WorldGenerator.Instance.MousePosTranslate(blockSelectIndex, mouseOnClickPosition, currentMousePosition);
+            WorldGenerator.Instance.AddVisibleBlock(GameManager.instance.selectBlockNum, mouseOnClickPosition, currentMousePosition);
 
-        prevPosition = Math.instance.TransLocalPosition(currentMousePosition);
+        prevPosition = currentPosition;
         //RootCanvas.Instance.SetWorkFlow(WorldGenerator.Instance.kCurrentWorkList, WorldGenerator.Instance.kCurrentFillWorkCount, WorldGenerator.Instance.kCurrentWorkNextIndex - 1);
     }
     public void DeleteBlock()
@@ -131,13 +167,12 @@ public class Builder : MonoBehaviour
                     break;
             }
 
-
-            currentPosition = Math.instance.TransLocalPosition(currentMousePosition);
+            currentPosition = TransPosition.instance.TransLocalPosition(currentMousePosition);
 
             if (currentPosition.x != prevPosition.x || currentPosition.z != prevPosition.z || currentPosition.y != prevPosition.y)
-                WorldGenerator.Instance.MousePosTranslate(blockSelectIndex, mouseOnClickPosition, currentMousePosition);
+                WorldGenerator.Instance.AddVisibleBlock(GameManager.instance.selectBlockNum, mouseOnClickPosition, currentMousePosition);
 
-            prevPosition = Math.instance.TransLocalPosition(currentMousePosition);
+            prevPosition = TransPosition.instance.TransLocalPosition(currentMousePosition);
         }
     }
     Vector2 rotation = Vector2.zero;

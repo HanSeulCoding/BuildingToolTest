@@ -19,6 +19,10 @@ public class QuitBtnDialog : MonoBehaviour
          RootCanvas.instance.quitPanel.gameObject.SetActive(false);
       
     }
+    public void PanelExit()
+    {
+        transform.parent.gameObject.SetActive(false);
+    }
     public void ExitBtnClick()
     {
        

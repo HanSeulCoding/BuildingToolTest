@@ -10,6 +10,10 @@ public class RootCanvas : MonoBehaviour
     public List<RectTransform> rectTransformList = new List<RectTransform>();
     public Transform quitPanel;
     private Text modeText;
+
+  
+
+    private int blockClickNum = 1;
     
     // Start is called before the first frame update
 
