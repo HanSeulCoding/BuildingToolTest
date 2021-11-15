@@ -23,54 +23,60 @@ public class Block : MonoBehaviour
     [HideInInspector]
     public bool isPooling;
 
-   
+    [HideInInspector]
+    private GameObject block;
     // Start is called before the first frame update
 
     private void Start()
     {
+        block = this.transform.GetChild(0).gameObject; 
+        SelectMaterial();
+        position = new Position();
+    }
+    private void SelectMaterial()
+    {
         if (!isPooling)
         {
-            Material []mesh = this.GetComponent<MeshRenderer>().materials;
+            Material[] mesh = block.GetComponent<MeshRenderer>().materials;
             switch (blockType)
             {
                 case 0:
-                    mesh[0] = GameManager.instance.materials[0];
+                    mesh[0] = Builder.instance.materials[0];
                     if (mesh[0] == null)
                     {
                         RootCanvas.instance.transform.Find("NotBlockType").gameObject.SetActive(true);
-                        WorldGenerator.Instance.work.addBlockList.Remove(this);
+                        Builder.instance.work.addBlockList.Remove(this);
                         Destroy(this.gameObject);
                         return;
                     }
                     //
-                    this.GetComponent<MeshRenderer>().materials = mesh; //null ���� �Ǵ�
+                    block.GetComponent<MeshRenderer>().materials = mesh; //null ���� �Ǵ�
                     break;
                 case 1:
-                    mesh[0] = GameManager.instance.materials[1];
+                    mesh[0] = Builder.instance.materials[1];
                     if (mesh[0] == null)
                     {
                         RootCanvas.instance.transform.Find("NotBlockType").gameObject.SetActive(true);
-                        WorldGenerator.Instance.work.addBlockList.Remove(this);
+                        Builder.instance.work.addBlockList.Remove(this);
                         Destroy(this.gameObject);
                         return;
                     }
 
-                    this.GetComponent<MeshRenderer>().materials = mesh;
+                    block.GetComponent<MeshRenderer>().materials = mesh;
                     break;
                 case 2:
-                    mesh[0] = GameManager.instance.materials[2];
+                    mesh[0] = Builder.instance.materials[2];
                     if (mesh[0] == null)
                     {
                         RootCanvas.instance.transform.Find("NotBlockType").gameObject.SetActive(true);
-                        WorldGenerator.Instance.work.addBlockList.Remove(this);
-                        Destroy(this.gameObject);
+                        Builder.instance.work.addBlockList.Remove(this);
+                        Destroy(block);
                         return;
                     }
-                    this.GetComponent<MeshRenderer>().materials = mesh;
+                    block.GetComponent<MeshRenderer>().materials = mesh;
                     break;
             }
         }
-        position = new Position();
     }
     private void Update()
     {
@@ -101,7 +107,7 @@ public class Block : MonoBehaviour
         }
     }
 
-    public void CreatePointUI() //block Ŭ�� �� 8���� Point UI ���� 
+    public void CreatePointUI() //
     {
         List<Vector3> blocksPos = new List<Vector3>();
         Vector3 temp = new Vector3(transform.localScale.x/2.0f, transform.localScale.y/2.0f,transform.localScale.z/2.0f);
@@ -127,29 +133,29 @@ public class Block : MonoBehaviour
 
         BlockSelectImg.instance.SetPosition(blocksPos);
     }
-    public int GetTypeValue()
-    {
-        if (gameObject.name.Equals(WorldGenerator.Instance.addBlock1.name) == true)
-            return 0;
-        else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock2.name) == true)
-            return 1;
-        else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock3.name) == true)
-            return 2;
-        else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock4.name) == true)
-            return 3;
-        else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock5.name) == true)
-            return 4;
-        else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock6.name) == true)
-            return 5;
-        else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock7.name) == true)
-            return 6;
-        else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock8.name) == true)
-            return 7;
-        else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock9.name) == true)
-            return 8;
+    //public int GetTypeValue()
+    //{
+    //    if (gameObject.name.Equals(WorldGenerator.Instance.addBlock1.name) == true)
+    //        return 0;
+    //    else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock2.name) == true)
+    //        return 1;
+    //    else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock3.name) == true)
+    //        return 2;
+    //    else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock4.name) == true)
+    //        return 3;
+    //    else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock5.name) == true)
+    //        return 4;
+    //    else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock6.name) == true)
+    //        return 5;
+    //    else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock7.name) == true)
+    //        return 6;
+    //    else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock8.name) == true)
+    //        return 7;
+    //    else if (gameObject.name.Equals(WorldGenerator.Instance.addBlock9.name) == true)
+    //        return 8;
 
-        return -1;
-    }
+    //    return -1;
+    //}
 
     public void TranslateScale(Vector3 clickMousePosition, Vector3 _normal)
     {
@@ -157,7 +163,7 @@ public class Block : MonoBehaviour
         {
             Vector3 currentMouseP = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y,
                 -Camera.main.transform.position.z));
-            float distance = Vector3.Distance(Builder.Instance.mouseOnClickPosition, currentMouseP);
+            float distance = Vector3.Distance(InputBlockPos.Instance.mouseOnClickPosition, currentMouseP);
  
             if(distance > 1.0)
             {

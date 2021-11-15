@@ -16,7 +16,7 @@ public class BlockInfoBtn : MonoBehaviour
             img.transform.gameObject.SetActive(true);
 
         img.sprite = Resources.Load<Sprite>("BlockImg/Block (" + blockType + ")");
-        GameManager.instance.materials[selectNum] = Resources.Load<Material>("Blocks/BlockMaterial/Block" + (blockType+1) + "Mat");
+        Builder.instance.materials[selectNum] = Resources.Load<Material>("Blocks/BlockMaterial/Block" + (blockType+1) + "Mat");
 
         Inventory.instance.selectBlockNum++;
 

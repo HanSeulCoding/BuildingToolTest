@@ -8,16 +8,11 @@ public class QuitBtnDialog : MonoBehaviour
     // Start is called before the first frame update
     public void ClickQuitBtn()
     {
-      
-            //RootCanvas.instance.transform.Find("QuitPanel").gameObject.SetActive(true);
         RootCanvas.instance.quitPanel.gameObject.SetActive(true);
- 
     }
     public void CancelBtnClick()
     {
-       
          RootCanvas.instance.quitPanel.gameObject.SetActive(false);
-      
     }
     public void PanelExit()
     {
@@ -25,8 +20,6 @@ public class QuitBtnDialog : MonoBehaviour
     }
     public void ExitBtnClick()
     {
-       
          Application.Quit();
-       
     }
 }

@@ -11,8 +11,6 @@ public class RootCanvas : MonoBehaviour
     public Transform quitPanel;
     private Text modeText;
 
-  
-
     private int blockClickNum = 1;
     
     // Start is called before the first frame update
@@ -45,5 +43,10 @@ public class RootCanvas : MonoBehaviour
     public void PrintMode(string modeTxt)
     {
         modeText.text = modeTxt;
+    }
+
+    public void QuitPannelEnter()
+    {
+        quitPanel.gameObject.SetActive(true);
     }
 }

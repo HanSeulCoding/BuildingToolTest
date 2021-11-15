@@ -8,6 +8,17 @@ public class CameraController : MonoBehaviour
     // Start is called before the first frame update
     public static CameraController instance;
 
+    [Header("카메라 이동 속도")]
+    public float camSpeed = 2f;
+    [Header("카메라 추진속도")]
+    public float camAccel;
+    [Header("카메라 회전 속도")]
+    public float camRotateSpeed = 10;
+    [Header("카메라 줌 속도")]
+    public float camZommSpeed = 10f;
+    [Header("Vertical Speed")]
+    public float camVerticalSpeed = 5f;
+
     [Header("Detail Grid 와 Cam 거리")]
     public float detailGridDist;
 
@@ -15,7 +26,7 @@ public class CameraController : MonoBehaviour
     private float prevMoveSpeed;
     private float scrollSpeed;
     private float zoomSpeed;
-  
+
 
     [HideInInspector]
     public bool isLookDetailGrid;
@@ -26,7 +37,6 @@ public class CameraController : MonoBehaviour
 
     private bool isLookAtMove = false;
 
-    
     private Transform bottomFloor;
 
     private void Awake()
@@ -36,10 +46,10 @@ public class CameraController : MonoBehaviour
 
     private void Start()
     {
-        bottomFloor = GameObject.Find("BottomFloor").transform;
-        moveSpeed = Builder.Instance.camSpeed;
-        scrollSpeed = Builder.Instance.camRotateSpeed;
-        zoomSpeed = Builder.Instance.camZommSpeed;
+        bottomFloor = Builder.instance.bottomFloor.transform;
+        moveSpeed = camSpeed;
+        scrollSpeed = camRotateSpeed;
+        zoomSpeed = camZommSpeed;
 
         SetSolution();
     }
@@ -69,16 +79,15 @@ public class CameraController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.LeftControl))
         {
-            moveSpeed = Builder.Instance.camAccel;
+            moveSpeed = camAccel;
             prevMoveSpeed = moveSpeed;
         }
 
         if (Input.GetKeyUp(KeyCode.LeftControl))
             moveSpeed = prevMoveSpeed;
 
+        CreateGrid();
         CameraCtrl();
-
-
     }
     private void CameraCtrl() //camera control
     {
@@ -105,14 +114,14 @@ public class CameraController : MonoBehaviour
         {
             float y;
             y = transform.position.y;
-            y += Builder.Instance.camVerticalSpeed * Time.deltaTime;
+            y += camVerticalSpeed * Time.deltaTime;
             transform.position = new Vector3(transform.position.x, y, transform.position.z);
         }
         if (Input.GetKey(KeyCode.LeftShift)) //Shift 수직 하강 이동
         {
             float y;
             y = transform.position.y;
-            y -= Builder.Instance.camVerticalSpeed * Time.deltaTime;
+            y -= camVerticalSpeed * Time.deltaTime;
             transform.position = new Vector3(transform.position.x, y, transform.position.z);
         }
         if (Input.GetAxis("Mouse ScrollWheel") > 0) //휠 확대
@@ -123,25 +132,27 @@ public class CameraController : MonoBehaviour
         if (Input.GetAxis("Mouse ScrollWheel") < 0) //휠 축소
                 transform.position -= transform.forward * scrollSpeed * Time.deltaTime;
 
-        if (detailGridDist + bottomFloor.position.y > transform.position.y) //detailGrild 출력 범위
-        {
-            isRemoveDetailGrid = false;
-            if(!isCreateDetailGrid)
-                GridGenerator.instance.CreateDetailGrid();
-        }
-        else //detailGrid 출력 X
-        {
-            isCreateDetailGrid = false;
-            if(!isRemoveDetailGrid)
-                GridGenerator.instance.RemoveDetailGrid();
-        }
-
         if (isLookAtMove) //카메라 축 이동
         {
             Vector3 angles = transform.eulerAngles;
             angles.y += Input.GetAxis("Mouse X") * scrollSpeed * Time.deltaTime;
             angles.x -= Input.GetAxis("Mouse Y") * scrollSpeed * Time.deltaTime;
             transform.eulerAngles = angles;
+        }
+    }
+    private void CreateGrid()
+    {
+        if (detailGridDist + bottomFloor.position.y > transform.position.y) //detailGrild 출력 범위
+        {
+            isRemoveDetailGrid = false;
+            if (!isCreateDetailGrid)
+                GridGenerator.instance.CreateDetailGrid();
+        }
+        else //detailGrid 출력 X
+        {
+            isCreateDetailGrid = false;
+            if (!isRemoveDetailGrid)
+                GridGenerator.instance.RemoveDetailGrid();
         }
     }
 }

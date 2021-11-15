@@ -33,20 +33,16 @@ public class GridGenerator : MonoBehaviour
     private LineRenderer renderLine;
     private Vector3 pos;
 
-
+    
     private void Awake()
     {
         instance = this;
     }
     private void Start()
     {
-        bottomFloor = GameObject.Find("BottomFloor");
+        bottomFloor = Builder.instance.bottomFloor;
         detailGridT = GameObject.Find("DetailGrid");
         pos = this.transform.position;
-
-       // lineNum = WorldGenerator.Instance.columnSize;
-       // detailLineNum = WorldGenerator.Instance.columnSize;
-      //  lineLength = WorldGenerator.Instance.columnSize;
 
         horizonLines(rowSize, lineNum, transform, false);
         verticalLines(columnSize, lineNum, transform, false);
@@ -60,14 +56,11 @@ public class GridGenerator : MonoBehaviour
     //first line genarte
     public void InstLine(Transform parentTransform, bool isDetail)
     {
-
         GameObject obj;
        
         obj = Instantiate(line, pos, Quaternion.identity);
         obj.transform.SetParent(parentTransform);
         renderLine = obj.GetComponent<LineRenderer>();
-    
-        
         
         renderLine.useWorldSpace = false;
         renderLine.SetWidth(0.1f, 0.1f);
