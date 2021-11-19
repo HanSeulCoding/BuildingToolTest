@@ -10,9 +10,7 @@ public class InputBlockPos : MonoBehaviour
     [HideInInspector]
     public Vector3 mouseOnClickPosition;
 
-    [HideInInspector]
-    public Vector3 currentMousePosition = new Vector3();
-
+    private Vector3 _normal = new Vector3();
     private Ray mCameraHitRay = new Ray();
     private Position prevPosition = new Position();
     private Transform blockTransform;
@@ -25,30 +23,36 @@ public class InputBlockPos : MonoBehaviour
         Instance = this;
         InitSetting();
     }
-    public void BuildAndDelClick(bool isBuild)
+    public Vector3 GetClickMousePos()
     {
-        Vector3 _normal = new Vector3();
         RaycastHit hit;
         bool isBoxClick = false;
-      
+        Vector3 _normal = new Vector3();
+
         mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(mCameraHitRay, out hit) == true)
         {
             mouseOnClickPosition = hit.point;
-            
-            Debug.Log("mouseOnClickPos" + mouseOnClickPosition);
+
+            //Debug.Log("mouseOnClickPos" + mouseOnClickPosition);
             if (hit.transform.gameObject.layer == 7)
                 _normal = hit.normal;
         }
-        if(isBuild)
-          Builder.instance.ClickBuildBlock(_normal);
+        return _normal;
+    }
+    public void BuildAndDelClick(bool isBuild,Vector3 _normal)
+    {
+        if (isBuild)
+        {
+            Builder.instance.ClickBuildBlock(_normal);
+        }
         if (!isBuild)
-            Builder.instance.ClickDeleteBlock();
+          Builder.instance.ClickDeleteBlock();
     }
     public RaycastHit PressClick()
     {
         RaycastHit hit;
-
+        Vector3 currentMousePosition = new Vector3();
         mCameraHitRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         int layerMask = 1 << 7;
 
@@ -56,28 +60,29 @@ public class InputBlockPos : MonoBehaviour
         {
             currentMousePosition.x = hit.point.x;
             currentMousePosition.z = hit.point.z;
-            if (PlayerManager.instance.isPress)
+            if (PlayerInputManager.instance.isPress)
             {
                // Debug.Log("block click");
-                InputPos_VisibleBlock(hit);
+                InputPos_VisibleBlock(currentMousePosition,hit);
+                Debug.Log("BuildBlock");
                 
             }
             blockTransform = hit.transform;
             return hit;
         }
 
-        if (Physics.Raycast(mCameraHitRay, out hit) == true)
+        if (Physics.Raycast(mCameraHitRay, out hit,Mathf.Infinity, 1<<6))
         {
             currentMousePosition.x = hit.point.x;
             currentMousePosition.z = hit.point.z;
-            if (PlayerManager.instance.isPress)
+            if (PlayerInputManager.instance.isPress)
             {
-                InputPos_VisibleBlock(hit);
+                InputPos_VisibleBlock(currentMousePosition,hit);
             }
         }
         return hit;
     }
-    public void InputPos_VisibleBlock(RaycastHit hit) //보이는 블럭 설치 Drag 시 사용 
+    public void InputPos_VisibleBlock(Vector3 currentMousePosition, RaycastHit hit) //보이는 블럭 설치 Drag 시 사용 
     {
         bool isBlockClick = false;
         Position currentPosition;
@@ -87,14 +92,14 @@ public class InputBlockPos : MonoBehaviour
             case 7:
                 isBlockClick = true;
                 currentMousePosition.y = hit.transform.position.y + (Builder.instance.YSize / 10.0f / 2.0f);//설치된 블록 클릭 시,
-                if (PlayerManager.instance.mCurrentMode == PlayerManager.Mode.Delete)
+                if (PlayerInputManager.instance.mCurrentMode == PlayerInputManager.Mode.Delete)
                 {
                     currentMousePosition.y = hit.transform.position.y;
                 }
                 break;
      
                 case 6:
-                  currentMousePosition.y = (Builder.instance.YSize / 10.0f / 2.0f); //pooling block 클릭 시.
+                 // currentMousePosition.y = (Builder.instance.YSize / 10.0f / 2.0f); //pooling block 클릭 시.
                     break;
 
                 case 8:
@@ -105,8 +110,9 @@ public class InputBlockPos : MonoBehaviour
         }
         currentPosition = TransPosition.instance.TransLocalPosition(currentMousePosition);
 
-        if (currentPosition.x != prevPosition.x || currentPosition.z != prevPosition.z || currentPosition.y != prevPosition.y)
-            Builder.instance.AddVisibleBlock(Builder.instance.blockType, mouseOnClickPosition, currentMousePosition);
+
+       // if (currentPosition.x != prevPosition.x || currentPosition.z != prevPosition.z || currentPosition.y != prevPosition.y)
+        Builder.instance.AddVisibleBlock(Builder.instance.blockType, mouseOnClickPosition, currentMousePosition);
 
         prevPosition = currentPosition;
     }

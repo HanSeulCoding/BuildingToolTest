@@ -21,7 +21,7 @@ public class RootCanvas : MonoBehaviour
     }
     void Start()
     {
-        modeText = GameObject.Find("ModeTxt").GetComponent<Text>();
+        //modeText = GameObject.Find("ModeTxt").GetComponent<Text>();
         quitPanel = transform.Find("QuitPanel").transform;
 
     }
@@ -42,7 +42,7 @@ public class RootCanvas : MonoBehaviour
 
     public void PrintMode(string modeTxt)
     {
-        modeText.text = modeTxt;
+       modeText.text = modeTxt;
     }
 
     public void QuitPannelEnter()
