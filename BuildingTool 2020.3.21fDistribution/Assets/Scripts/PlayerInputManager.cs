@@ -42,6 +42,8 @@ public class PlayerInputManager : MonoBehaviour
   
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.T))
+            StartCoroutine(Builder.instance.Test());
         if (Input.GetKey(KeyCode.LeftControl) == true)
             mCurrentMode = Mode.BlockSelect;
         

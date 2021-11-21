@@ -69,20 +69,45 @@ public class Builder : MonoBehaviour
     {
         instance = this;
         InitSetting();
-       // Test();
+      
         
     }
-    private void Test()
+    public IEnumerator Test()
     {
-
-        for (int z = 0; z < 110; z++)
+        for (int i = 0; i < 100; i++)
         {
-            Vector3 position = new Vector3(0, z, 0);
-            AddBlock(0, position);
+            for (int j = 0; j < 100; j++)
+            {
+
+                for (int z = 0; z < 80; z++)
+                {
+                    Vector3 position = new Vector3(i, j, z);
+
+                    work.addBlockList.Add(AddBlock(0, position));
+                }
+
+
+            }
+            yield return new WaitForSeconds((float)0.01);
         }
-
-
     }
+    //public void Test()
+    //{
+    //    for(int i=0;i<100;i++)
+    //    {
+    //        for(int j = 0;j<100;j++)
+    //        {
+    //            for (int z = 0; z < 10; z++)
+    //            {
+    //                Vector3 position = new Vector3(i, j, z);
+    //                AddBlock(0, position);
+    //            }
+
+    //        }
+    //    }
+      
+
+    //}
     private void InitSetting()
     {
         blockModel = Resources.Load<Block>("Blocks/Block");
